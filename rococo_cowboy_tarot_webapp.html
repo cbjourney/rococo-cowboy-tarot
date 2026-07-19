@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rococo Cowboy Tarot</title>
+    
+    <!-- 
+    ================================================
+    HOW TO USE YOUR GENERATED CARD IMAGES
+    ================================================
+    
+    1. Create a folder called "cards" in the same directory as this HTML file.
+    
+    2. Save all your generated tarot card images into that folder using this exact naming convention:
+    
+       Format: 00-card-name.png
+       Examples:
+         - 00-the-fool.png
+         - 01-the-magician.png
+         - 21-the-world.png
+         - 22-ace-of-wands.png
+         - 35-king-of-wands.png
+         - 36-ace-of-cups.png
+         ... and so on for all 78 cards.
+    
+    3. For the card back, save your generated back design as: back.png (highly recommended for the full experience)
+    
+    The app will automatically try to load your real images. 
+    If an image is missing, it will gracefully fall back to a styled placeholder.
+    
+    Tip: Use the card IDs from the JavaScript data (they are already numbered 0-77 in order).
+    -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;family=Inter:wght@300;400;500&amp;display=swap');
+        
+        :root {
+            --gold: #C5A46E;
+            --desert: #D4B896;
+            --rose: #C17B6B;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .heading-serif {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+        }
+
+        .tarot-card {
+            width: 180px;
+            height: 300px;
+            perspective: 1000px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .tarot-card:hover {
+            transform: translateY(-8px);
+        }
+        
+        .tarot-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .tarot-card.flipped .tarot-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .tarot-card.reversed {
+            transform: rotate(180deg);
+        }
+        
+        .tarot-card.reversed .tarot-card-inner {
+            transform: rotate(180deg);
+        }
+        
+        .tarot-card-front, .tarot-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .tarot-card-front {
+            background: linear-gradient(145deg, #f8f1e3, #e8d9c2);
+            border: 8px solid #C5A46E;
+        }
+        
+        .tarot-card-back {
+            background: linear-gradient(145deg, #C5A46E, #A67C52);
+            transform: rotateY(180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .deck-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+        
+        .section-tab {
+            transition: all 0.3s ease;
+        }
+        
+        .section-tab.active {
+            border-bottom: 3px solid #C5A46E;
+            color: #C5A46E;
+            font-weight: 600;
+        }
+        
+        .modal {
+            animation: fadeInScale 0.3s ease forwards;
+        }
+        
+        .rocco-gold {
+            color: #C5A46E;
+        }
+        
+        .desert-bg {
+            background: linear-gradient(to bottom, #f8f1e3, #e8d9c2);
+        }
+        
+        .tarot-meaning {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1.25rem;
+        }
+        
+        @media (max-width: 640px) {
+            .tarot-card {
+                width: 140px;
+                height: 240px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#f8f1e3] text-[#3f2a1e]">
+    <!-- Header -->
+    <div class="border-b border-[#C5A46E]/30 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-x-4">
+                <div class="w-12 h-12 bg-[#C5A46E] rounded-2xl flex items-center justify-center shadow-inner">
+                    <i class="fa-solid fa-hat-cowboy text-white text-3xl"></i>
+                </div>
+                <div>
+                    <h1 class="heading-serif text-3xl tracking-tight text-[#3f2a1e]">Rococo Cowboy</h1>
+                    <p class="text-xs text-[#C5A46E] font-medium tracking-[2px]">TAROT</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-x-2 bg-white rounded-3xl p-1 shadow-sm border border-[#C5A46E]/20">
+                <button onclick="switchTab('read')" id="tab-read"
+                        class="section-tab active px-6 py-2.5 text-sm font-medium rounded-3xl flex items-center gap-x-2">
+                    <i class="fa-solid fa-magic"></i>
+                    <span>Read</span>
+                </button>
+                <button onclick="switchTab('gallery')" id="tab-gallery"
+                        class="section-tab px-6 py-2.5 text-sm font-medium rounded-3xl flex items-center gap-x-2">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Gallery</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- READ SECTION -->
+    <div id="section-read" class="max-w-6xl mx-auto px-6 pt-10 pb-16">
+        <div class="text-center mb-10">
+            <h2 class="heading-serif text-5xl tracking-tighter mb-3">Draw Your Cards</h2>
+            <p class="text-[#6b5746] max-w-md mx-auto">Shuffle the deck and receive guidance from the desert winds.</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex flex-wrap justify-center gap-4 mb-10">
+            <button onclick="shuffleDeck()" 
+                    class="flex items-center gap-x-3 bg-white hover:bg-[#f8f1e3] transition-colors border border-[#C5A46E] text-[#3f2a1e] px-8 py-3.5 rounded-3xl font-medium shadow-sm">
+                <i class="fa-solid fa-sync-alt"></i>
+                <span>Shuffle Deck</span>
+            </button>
+            
+            <div class="flex bg-white border border-[#C5A46E] rounded-3xl p-1 shadow-sm">
+                <button onclick="drawCards(1)" class="px-6 py-3 text-sm font-medium rounded-3xl hover:bg-[#f8f1e3] transition-colors">1 Card</button>
+                <button onclick="drawCards(3)" class="px-6 py-3 text-sm font-medium rounded-3xl hover:bg-[#f8f1e3] transition-colors">3 Cards</button>
+                <button onclick="drawCards(5)" class="px-6 py-3 text-sm font-medium rounded-3xl hover:bg-[#f8f1e3] transition-colors">5 Cards</button>
+            </div>
+        </div>
+
+        <!-- Drawn Cards -->
+        <div id="drawn-cards" class="flex flex-wrap justify-center gap-8 min-h-[340px]">
+            <!-- Cards will be dynamically added here -->
+        </div>
+        
+        <div class="text-center mt-8 text-xs text-[#8c735f]">
+            Click any card to reveal its meaning
+        </div>
+    </div>
+
+    <!-- GALLERY SECTION -->
+    <div id="section-gallery" class="max-w-7xl mx-auto px-6 pt-8 pb-16 hidden">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-y-4 mb-8">
+            <div>
+                <h2 class="heading-serif text-4xl tracking-tight">The Full Deck</h2>
+                <p class="text-[#6b5746]">Explore all 78 cards of the Rococo Cowboy Tarot</p>
+            </div>
+            
+            <!-- Search -->
+            <div class="relative w-full md:w-80">
+                <input type="text" id="search-input" placeholder="Search cards..." 
+                       onkeyup="filterGallery()"
+                       class="w-full bg-white border border-[#C5A46E]/40 focus:border-[#C5A46E] transition-colors pl-11 py-3 rounded-3xl text-sm outline-none">
+                <i class="fa-solid fa-search absolute left-4 top-4 text-[#C5A46E]"></i>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-2 mb-8" id="filter-buttons">
+            <button onclick="filterBySuit('all')" class="filter-btn active px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] bg-[#C5A46E] text-white">All</button>
+            <button onclick="filterBySuit('major')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] hover:bg-[#f8f1e3]">Major Arcana</button>
+            <button onclick="filterBySuit('wands')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] hover:bg-[#f8f1e3]">Wands</button>
+            <button onclick="filterBySuit('cups')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] hover:bg-[#f8f1e3]">Cups</button>
+            <button onclick="filterBySuit('swords')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] hover:bg-[#f8f1e3]">Swords</button>
+            <button onclick="filterBySuit('pentacles')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] hover:bg-[#f8f1e3]">Pentacles</button>
+        </div>
+
+        <!-- Card Grid -->
+        <div id="gallery-grid" class="card-grid">
+            <!-- Populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Card Detail Modal -->
+    <div id="card-modal" onclick="closeModal()" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
+        <div onclick="event.stopImmediatePropagation()" class="bg-white max-w-2xl w-full rounded-3xl overflow-hidden shadow-2xl">
+            <div class="flex flex-col md:flex-row">
+                <!-- Card Visual -->
+                <div class="md:w-5/12 bg-[#f8f1e3] p-8 flex items-center justify-center">
+                    <div id="modal-card-visual" class="tarot-card w-[200px] h-[330px] cursor-default">
+                        <div class="tarot-card-inner" id="modal-card-inner">
+                            <div class="tarot-card-front p-3 flex items-center justify-center">
+                                <img id="modal-card-image" class="max-h-full rounded-xl shadow-inner border border-[#C5A46E]/30" alt="Card">
+                            </div>
+                            <div class="tarot-card-back flex items-center justify-center text-center p-6">
+                                <div>
+                                    <i class="fa-solid fa-hat-cowboy text-5xl mb-4 opacity-90"></i>
+                                    <div class="font-semibold tracking-widest text-sm">ROCCO COWBOY</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card Info -->
+                <div class="md:w-7/12 p-8">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 id="modal-card-name" class="heading-serif text-3xl tracking-tight"></h3>
+                            <p id="modal-card-type" class="text-[#C5A46E] text-sm font-medium"></p>
+                        </div>
+                        <button onclick="closeModal()" class="text-[#C5A46E] hover:text-[#3f2a1e]">
+                            <i class="fa-solid fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="uppercase tracking-[1.5px] text-xs font-semibold text-[#C5A46E] mb-1.5">Meaning</div>
+                        <div id="modal-card-meaning" class="tarot-meaning text-[#3f2a1e] leading-relaxed text-[15px]"></div>
+                    </div>
+                    
+                    <div>
+                        <div class="uppercase tracking-[1.5px] text-xs font-semibold text-[#C5A46E] mb-2">Keywords</div>
+                        <div id="modal-card-keywords" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind script
+        function initializeTailwind() {
+            document.documentElement.style.setProperty('--accent-gold', '#C5A46E');
+        }
+        
+        // Card Data - Complete 78 cards with meanings
+        const cards = [
+            // Major Arcana
+            { id: 0, name: "The Fool", suit: "major", type: "Major Arcana", number: "0", 
+              meaning: "New beginnings, innocence, adventure, and taking a leap of faith. The desert winds call you forward into the unknown with childlike wonder.", 
+              keywords: ["New beginnings", "Adventure", "Innocence", "Leap of faith"] },
+            
+            { id: 1, name: "The Magician", suit: "major", type: "Major Arcana", number: "I", 
+              meaning: "Manifestation, resourcefulness, and the power to turn vision into reality. You hold all the tools you need.", 
+              keywords: ["Manifestation", "Skill", "Willpower", "Creation"] },
+            
+            { id: 2, name: "The High Priestess", suit: "major", type: "Major Arcana", number: "II", 
+              meaning: "Intuition, mystery, and the wisdom that comes from within. Listen to the quiet voice of your soul.", 
+              keywords: ["Intuition", "Mystery", "Inner wisdom", "Subconscious"] },
+            
+            { id: 3, name: "The Empress", suit: "major", type: "Major Arcana", number: "III", 
+              meaning: "Abundance, nurturing, and the fertile power of creation. Embrace beauty and sensual pleasure.", 
+              keywords: ["Abundance", "Nurturing", "Sensuality", "Creativity"] },
+            
+            { id: 4, name: "The Emperor", suit: "major", type: "Major Arcana", number: "IV", 
+              meaning: "Authority, structure, and stable leadership. Build something lasting with discipline and vision.", 
+              keywords: ["Authority", "Structure", "Stability", "Leadership"] },
+            
+            { id: 5, name: "The Hierophant", suit: "major", type: "Major Arcana", number: "V", 
+              meaning: "Tradition, spiritual guidance, and established systems. Seek wisdom from trusted teachers.", 
+              keywords: ["Tradition", "Guidance", "Belief systems", "Mentorship"] },
+            
+            { id: 6, name: "The Lovers", suit: "major", type: "Major Arcana", number: "VI", 
+              meaning: "Union, partnership, and meaningful choices of the heart. Alignment between values and desires.", 
+              keywords: ["Union", "Partnership", "Choice", "Harmony"] },
+            
+            { id: 7, name: "The Chariot", suit: "major", type: "Major Arcana", number: "VII", 
+              meaning: "Determination, control, and triumphant forward movement. Stay focused on your destination.", 
+              keywords: ["Determination", "Control", "Victory", "Willpower"] },
+            
+            { id: 8, name: "Strength", suit: "major", type: "Major Arcana", number: "VIII", 
+              meaning: "Inner strength, courage, and compassionate self-mastery. True power comes from within.", 
+              keywords: ["Inner strength", "Courage", "Compassion", "Self-mastery"] },
+            
+            { id: 9, name: "The Hermit", suit: "major", type: "Major Arcana", number: "IX", 
+              meaning: "Solitude, introspection, and the search for inner truth. Step back to see clearly.", 
+              keywords: ["Solitude", "Introspection", "Guidance", "Wisdom"] },
+            
+            { id: 10, name: "Wheel of Fortune", suit: "major", type: "Major Arcana", number: "X", 
+              meaning: "Cycles of change, destiny, and turning points. What goes around comes around.", 
+              keywords: ["Cycles", "Destiny", "Change", "Luck"] },
+            
+            { id: 11, name: "Justice", suit: "major", type: "Major Arcana", number: "XI", 
+              meaning: "Truth, fairness, and karmic balance. Take responsibility for your actions.", 
+              keywords: ["Truth", "Fairness", "Balance", "Accountability"] },
+            
+            { id: 12, name: "The Hanged Man", suit: "major", type: "Major Arcana", number: "XII", 
+              meaning: "Surrender, new perspective, and willing sacrifice. Sometimes you must let go to move forward.", 
+              keywords: ["Surrender", "Perspective", "Sacrifice", "Letting go"] },
+            
+            { id: 13, name: "Death", suit: "major", type: "Major Arcana", number: "XIII", 
+              meaning: "Transformation, endings, and rebirth. Something must die for something new to be born.", 
+              keywords: ["Transformation", "Endings", "Rebirth", "Change"] },
+            
+            { id: 14, name: "Temperance", suit: "major", type: "Major Arcana", number: "XIV", 
+              meaning: "Balance, moderation, and harmonious blending. Find the middle path.", 
+              keywords: ["Balance", "Moderation", "Harmony", "Integration"] },
+            
+            { id: 15, name: "The Devil", suit: "major", type: "Major Arcana", number: "XV", 
+              meaning: "Bondage, materialism, and shadow aspects. What chains are you ready to break?", 
+              keywords: ["Bondage", "Addiction", "Shadow", "Liberation"] },
+            
+            { id: 16, name: "The Tower", suit: "major", type: "Major Arcana", number: "XVI", 
+              meaning: "Sudden upheaval, revelation, and necessary destruction. The old must fall for the new to rise.", 
+              keywords: ["Upheaval", "Revelation", "Destruction", "Awakening"] },
+            
+            { id: 17, name: "The Star", suit: "major", type: "Major Arcana", number: "XVII", 
+              meaning: "Hope, inspiration, and spiritual guidance. The light returns after darkness.", 
+              keywords: ["Hope", "Inspiration", "Healing", "Faith"] },
+            
+            { id: 18, name: "The Moon", suit: "major", type: "Major Arcana", number: "XVIII", 
+              meaning: "Illusion, intuition, and the subconscious. Trust your instincts in uncertain times.", 
+              keywords: ["Illusion", "Intuition", "Mystery", "Subconscious"] },
+            
+            { id: 19, name: "The Sun", suit: "major", type: "Major Arcana", number: "XIX", 
+              meaning: "Success, vitality, and joy. The light of truth and happiness shines brightly.", 
+              keywords: ["Success", "Joy", "Vitality", "Positivity"] },
+            
+            { id: 20, name: "Judgement", suit: "major", type: "Major Arcana", number: "XX", 
+              meaning: "Rebirth, inner calling, and second chances. Rise to meet your higher purpose.", 
+              keywords: ["Rebirth", "Calling", "Renewal", "Awakening"] },
+            
+            { id: 21, name: "The World", suit: "major", type: "Major Arcana", number: "XXI", 
+              meaning: "Completion, integration, and fulfillment. You have arrived at a meaningful destination.", 
+              keywords: ["Completion", "Fulfillment", "Integration", "Achievement"] },
+
+            // Wands
+            { id: 22, name: "Ace of Wands", suit: "wands", type: "Wands", number: "Ace", 
+              meaning: "New passion, inspiration, and creative spark. A powerful beginning fueled by desire.", 
+              keywords: ["New passion", "Inspiration", "Creativity", "Potential"] },
+            
+            { id: 23, name: "Two of Wands", suit: "wands", type: "Wands", number: "Two", 
+              meaning: "Planning, future vision, and making choices. You stand at a crossroads of possibility.", 
+              keywords: ["Planning", "Vision", "Choice", "Progress"] },
+            
+            { id: 24, name: "Three of Wands", suit: "wands", type: "Wands", number: "Three", 
+              meaning: "Expansion, foresight, and long-term growth. Your efforts are beginning to bear fruit.", 
+              keywords: ["Expansion", "Foresight", "Growth", "Opportunity"] },
+            
+            { id: 25, name: "Four of Wands", suit: "wands", type: "Wands", number: "Four", 
+              meaning: "Celebration, harmony, and stable foundations. A time of joy and coming together.", 
+              keywords: ["Celebration", "Harmony", "Stability", "Community"] },
+            
+            { id: 26, name: "Five of Wands", suit: "wands", type: "Wands", number: "Five", 
+              meaning: "Competition, conflict, and tension. Different ideas clash, but growth can come from friction.", 
+              keywords: ["Competition", "Conflict", "Tension", "Challenge"] },
+            
+            { id: 27, name: "Six of Wands", suit: "wands", type: "Wands", number: "Six", 
+              meaning: "Victory, recognition, and public success. Your efforts are being acknowledged.", 
+              keywords: ["Victory", "Recognition", "Success", "Confidence"] },
+            
+            { id: 28, name: "Seven of Wands", suit: "wands", type: "Wands", number: "Seven", 
+              meaning: "Perseverance, defense, and standing your ground. Protect what you've built.", 
+              keywords: ["Perseverance", "Defense", "Courage", "Determination"] },
+            
+            { id: 29, name: "Eight of Wands", suit: "wands", type: "Wands", number: "Eight", 
+              meaning: "Speed, movement, and rapid progress. Things are happening quickly — stay aligned.", 
+              keywords: ["Speed", "Movement", "Progress", "Momentum"] },
+            
+            { id: 30, name: "Nine of Wands", suit: "wands", type: "Wands", number: "Nine", 
+              meaning: "Resilience, persistence, and the final push. You've been through a lot — keep going.", 
+              keywords: ["Resilience", "Persistence", "Endurance", "Last stand"] },
+            
+            { id: 31, name: "Ten of Wands", suit: "wands", type: "Wands", number: "Ten", 
+              meaning: "Burden, responsibility, and hard work. You're carrying a lot — know when to delegate.", 
+              keywords: ["Burden", "Responsibility", "Hard work", "Overload"] },
+            
+            { id: 32, name: "Page of Wands", suit: "wands", type: "Wands", number: "Page", 
+              meaning: "Enthusiasm, exploration, and new creative ideas. Approach life with youthful curiosity.", 
+              keywords: ["Enthusiasm", "Exploration", "Creativity", "Curiosity"] },
+            
+            { id: 33, name: "Knight of Wands", suit: "wands", type: "Wands", number: "Knight", 
+              meaning: "Action, passion, and fearless pursuit. Move forward with energy and confidence.", 
+              keywords: ["Action", "Passion", "Adventure", "Confidence"] },
+            
+            { id: 34, name: "Queen of Wands", suit: "wands", type: "Wands", number: "Queen", 
+              meaning: "Confidence, warmth, and magnetic self-expression. Own your power with grace.", 
+              keywords: ["Confidence", "Warmth", "Self-expression", "Leadership"] },
+            
+            { id: 35, name: "King of Wands", suit: "wands", type: "Wands", number: "King", 
+              meaning: "Visionary leadership, charisma, and bold action. Lead with passion and integrity.", 
+              keywords: ["Vision", "Leadership", "Charisma", "Inspiration"] },
+
+            // Cups
+            { id: 36, name: "Ace of Cups", suit: "cups", type: "Cups", number: "Ace", 
+              meaning: "New emotional beginning, love, and spiritual connection. An open heart brings abundance.", 
+              keywords: ["New love", "Emotional beginning", "Compassion", "Intuition"] },
+            
+            { id: 37, name: "Two of Cups", suit: "cups", type: "Cups", number: "Two", 
+              meaning: "Partnership, connection, and mutual respect. A meaningful bond is forming or deepening.", 
+              keywords: ["Partnership", "Connection", "Love", "Harmony"] },
+            
+            { id: 38, name: "Three of Cups", suit: "cups", type: "Cups", number: "Three", 
+              meaning: "Celebration, friendship, and community. Joy shared with others brings deep fulfillment.", 
+              keywords: ["Celebration", "Friendship", "Community", "Joy"] },
+            
+            { id: 39, name: "Four of Cups", suit: "cups", type: "Cups", number: "Four", 
+              meaning: "Contemplation, apathy, and missed opportunity. Look up — something meaningful is being offered.", 
+              keywords: ["Contemplation", "Apathy", "Introspection", "Opportunity"] },
+            
+            { id: 40, name: "Five of Cups", suit: "cups", type: "Cups", number: "Five", 
+              meaning: "Loss, grief, and disappointment. Focus on what remains rather than what was spilled.", 
+              keywords: ["Loss", "Grief", "Disappointment", "Regret"] },
+            
+            { id: 41, name: "Six of Cups", suit: "cups", type: "Cups", number: "Six", 
+              meaning: "Nostalgia, innocence, and happy memories. Reconnect with the joy of simpler times.", 
+              keywords: ["Nostalgia", "Innocence", "Memories", "Joy"] },
+            
+            { id: 42, name: "Seven of Cups", suit: "cups", type: "Cups", number: "Seven", 
+              meaning: "Choices, illusion, and wishful thinking. Not everything that glitters is gold.", 
+              keywords: ["Choices", "Illusion", "Fantasy", "Temptation"] },
+            
+            { id: 43, name: "Eight of Cups", suit: "cups", type: "Cups", number: "Eight", 
+              meaning: "Walking away, seeking deeper meaning, and emotional maturity. It's time to move on.", 
+              keywords: ["Walking away", "Seeking", "Maturity", "Letting go"] },
+            
+            { id: 44, name: "Nine of Cups", suit: "cups", type: "Cups", number: "Nine", 
+              meaning: "Emotional satisfaction, wishes fulfilled, and contentment. You have what you need.", 
+              keywords: ["Satisfaction", "Contentment", "Wishes", "Emotional fulfillment"] },
+            
+            { id: 45, name: "Ten of Cups", suit: "cups", type: "Cups", number: "Ten", 
+              meaning: "Emotional harmony, family, and lasting happiness. A beautiful vision of love and belonging.", 
+              keywords: ["Harmony", "Family", "Happiness", "Emotional fulfillment"] },
+            
+            { id: 46, name: "Page of Cups", suit: "cups", type: "Cups", number: "Page", 
+              meaning: "Creative messenger, emotional openness, and intuitive messages. Stay curious and kind.", 
+              keywords: ["Creativity", "Intuition", "Emotional openness", "Messages"] },
+            
+            { id: 47, name: "Knight of Cups", suit: "cups", type: "Cups", number: "Knight", 
+              meaning: "Romantic pursuit, emotional offers, and following your heart. Move with grace and feeling.", 
+              keywords: ["Romance", "Emotion", "Idealism", "Offer"] },
+            
+            { id: 48, name: "Queen of Cups", suit: "cups", type: "Cups", number: "Queen", 
+              meaning: "Emotional intelligence, compassion, and deep intuition. Lead with empathy and wisdom.", 
+              keywords: ["Compassion", "Intuition", "Emotional intelligence", "Healing"] },
+            
+            { id: 49, name: "King of Cups", suit: "cups", type: "Cups", number: "King", 
+              meaning: "Emotional balance, compassion, and wise leadership. Master your feelings with calm strength.", 
+              keywords: ["Emotional balance", "Compassion", "Wisdom", "Leadership"] },
+
+            // Swords
+            { id: 50, name: "Ace of Swords", suit: "swords", type: "Swords", number: "Ace", 
+              meaning: "Breakthrough, clarity, and mental victory. The truth cuts through illusion.", 
+              keywords: ["Clarity", "Breakthrough", "Truth", "Mental power"] },
+            
+            { id: 51, name: "Two of Swords", suit: "swords", type: "Swords", number: "Two", 
+              meaning: "Indecision, stalemate, and difficult choices. Sometimes you must make peace with uncertainty.", 
+              keywords: ["Indecision", "Stalemate", "Choice", "Balance"] },
+            
+            { id: 52, name: "Three of Swords", suit: "swords", type: "Swords", number: "Three", 
+              meaning: "Heartbreak, sorrow, and painful truth. Healing begins with honest acknowledgment.", 
+              keywords: ["Heartbreak", "Sorrow", "Pain", "Healing"] },
+            
+            { id: 53, name: "Four of Swords", suit: "swords", type: "Swords", number: "Four", 
+              meaning: "Rest, recovery, and mental retreat. Sometimes the wisest move is to pause and heal.", 
+              keywords: ["Rest", "Recovery", "Retreat", "Healing"] },
+            
+            { id: 54, name: "Five of Swords", suit: "swords", type: "Swords", number: "Five", 
+              meaning: "Conflict, betrayal, and hollow victory. Winning at all costs may cost too much.", 
+              keywords: ["Conflict", "Betrayal", "Defeat", "Loss"] },
+            
+            { id: 55, name: "Six of Swords", suit: "swords", type: "Swords", number: "Six", 
+              meaning: "Transition, moving on, and leaving difficulties behind. A journey toward calmer waters.", 
+              keywords: ["Transition", "Moving on", "Journey", "Healing"] },
+            
+            { id: 56, name: "Seven of Swords", suit: "swords", type: "Swords", number: "Seven", 
+              meaning: "Deception, strategy, and getting away with something. Be careful what you take with you.", 
+              keywords: ["Deception", "Strategy", "Betrayal", "Caution"] },
+            
+            { id: 57, name: "Eight of Swords", suit: "swords", type: "Swords", number: "Eight", 
+              meaning: "Feeling trapped, self-imposed restriction, and helplessness. The way out exists — look for it.", 
+              keywords: ["Trapped", "Restriction", "Victim mentality", "Liberation"] },
+            
+            { id: 58, name: "Nine of Swords", suit: "swords", type: "Swords", number: "Nine", 
+              meaning: "Anxiety, worry, and mental anguish. Your thoughts are creating suffering — release them.", 
+              keywords: ["Anxiety", "Worry", "Nightmares", "Mental anguish"] },
+            
+            { id: 59, name: "Ten of Swords", suit: "swords", type: "Swords", number: "Ten", 
+              meaning: "Rock bottom, painful ending, and total defeat. The worst is over — a new dawn is coming.", 
+              keywords: ["Rock bottom", "Ending", "Defeat", "Renewal"] },
+            
+            { id: 60, name: "Page of Swords", suit: "swords", type: "Swords", number: "Page", 
+              meaning: "Curiosity, vigilance, and mental alertness. Stay sharp and speak your truth.", 
+              keywords: ["Curiosity", "Vigilance", "Truth", "Communication"] },
+            
+            { id: 61, name: "Knight of Swords", suit: "swords", type: "Swords", number: "Knight", 
+              meaning: "Ambitious action, direct communication, and intellectual pursuit. Move with clarity and speed.", 
+              keywords: ["Action", "Directness", "Intellect", "Ambition"] },
+            
+            { id: 62, name: "Queen of Swords", suit: "swords", type: "Swords", number: "Queen", 
+              meaning: "Clear communication, independence, and sharp intellect. Speak your truth with compassion.", 
+              keywords: ["Clarity", "Independence", "Truth", "Boundaries"] },
+            
+            { id: 63, name: "King of Swords", suit: "swords", type: "Swords", number: "King", 
+              meaning: "Intellectual authority, truth, and clear judgment. Lead with logic and fairness.", 
+              keywords: ["Authority", "Truth", "Judgment", "Logic"] },
+
+            // Pentacles
+            { id: 64, name: "Ace of Pentacles", suit: "pentacles", type: "Pentacles", number: "Ace", 
+              meaning: "New opportunity, prosperity, and grounded manifestation. A seed of abundance is planted.", 
+              keywords: ["New opportunity", "Prosperity", "Manifestation", "Abundance"] },
+            
+            { id: 65, name: "Two of Pentacles", suit: "pentacles", type: "Pentacles", number: "Two", 
+              meaning: "Balance, juggling, and adaptability. Manage multiple priorities with grace and flow.", 
+              keywords: ["Balance", "Juggling", "Adaptability", "Priorities"] },
+            
+            { id: 66, name: "Three of Pentacles", suit: "pentacles", type: "Pentacles", number: "Three", 
+              meaning: "Teamwork, craftsmanship, and collaboration. Great things are built together.", 
+              keywords: ["Teamwork", "Craftsmanship", "Collaboration", "Skill"] },
+            
+            { id: 67, name: "Four of Pentacles", suit: "pentacles", type: "Pentacles", number: "Four", 
+              meaning: "Stability, security, and control. Hold what you have, but don’t let fear close your hands.", 
+              keywords: ["Stability", "Security", "Control", "Possessiveness"] },
+            
+            { id: 68, name: "Five of Pentacles", suit: "pentacles", type: "Pentacles", number: "Five", 
+              meaning: "Hardship, poverty, and feeling left out. Help is closer than you think — look for the light.", 
+              keywords: ["Hardship", "Poverty", "Isolation", "Hope"] },
+            
+            { id: 69, name: "Six of Pentacles", suit: "pentacles", type: "Pentacles", number: "Six", 
+              meaning: "Generosity, giving and receiving, and balanced exchange. Share what you have with an open heart.", 
+              keywords: ["Generosity", "Giving", "Receiving", "Balance"] },
+            
+            { id: 70, name: "Seven of Pentacles", suit: "pentacles", type: "Pentacles", number: "Seven", 
+              meaning: "Patience, long-term investment, and assessing progress. Your hard work is paying off — slowly.", 
+              keywords: ["Patience", "Investment", "Progress", "Assessment"] },
+            
+            { id: 71, name: "Eight of Pentacles", suit: "pentacles", type: "Pentacles", number: "Eight", 
+              meaning: "Diligence, craftsmanship, and mastery through practice. Excellence comes from dedicated work.", 
+              keywords: ["Diligence", "Craftsmanship", "Mastery", "Dedication"] },
+            
+            { id: 72, name: "Nine of Pentacles", suit: "pentacles", type: "Pentacles", number: "Nine", 
+              meaning: "Self-sufficiency, independence, and enjoying the fruits of your labor. You’ve earned this.", 
+              keywords: ["Self-sufficiency", "Independence", "Abundance", "Luxury"] },
+            
+            { id: 73, name: "Ten of Pentacles", suit: "pentacles", type: "Pentacles", number: "Ten", 
+              meaning: "Legacy, family wealth, and lasting security. Build something that endures for generations.", 
+              keywords: ["Legacy", "Family", "Wealth", "Security"] },
+            
+            { id: 74, name: "Page of Pentacles", suit: "pentacles", type: "Pentacles", number: "Page", 
+              meaning: "New opportunity in work or money, diligence, and practical ambition. Stay grounded and focused.", 
+              keywords: ["Opportunity", "Diligence", "Practicality", "Study"] },
+            
+            { id: 75, name: "Knight of Pentacles", suit: "pentacles", type: "Pentacles", number: "Knight", 
+              meaning: "Reliability, hard work, and steady progress. Slow and steady wins the race.", 
+              keywords: ["Reliability", "Hard work", "Steady progress", "Responsibility"] },
+            
+            { id: 76, name: "Queen of Pentacles", suit: "pentacles", type: "Pentacles", number: "Queen", 
+              meaning: "Nurturing, practicality, and abundant warmth. Create security while caring for others.", 
+              keywords: ["Nurturing", "Practicality", "Abundance", "Warmth"] },
+            
+            { id: 77, name: "King of Pentacles", suit: "pentacles", type: "Pentacles", number: "King", 
+              meaning: "Wealth, stability, and generous leadership. Master the material world with wisdom and integrity.", 
+              keywords: ["Wealth", "Stability", "Leadership", "Generosity"] }
+        ];
+
+        let currentFilter = 'all';
+        let drawnCards = [];
+
+        // Initialize the app
+        function initApp() {
+            initializeTailwind();
+            populateGallery();
+            
+            // Show read section by default
+            document.getElementById('section-read').classList.remove('hidden');
+            document.getElementById('section-gallery').classList.add('hidden');
+            
+            // Keyboard support
+            document.addEventListener('keydown', function(e) {
+                if (e.key === "Escape") {
+                    const modal = document.getElementById('card-modal');
+                    if (!modal.classList.contains('hidden')) {
+                        closeModal();
+                    }
+                }
+            });
+            
+            // Initial shuffle message
+            console.log('%c[Rococo Cowboy Tarot] Web app initialized successfully', 'color:#C5A46E');
+        }
+
+        // Switch between Read and Gallery tabs
+        function switchTab(tab) {
+            const readSection = document.getElementById('section-read');
+            const gallerySection = document.getElementById('section-gallery');
+            const tabRead = document.getElementById('tab-read');
+            const tabGallery = document.getElementById('tab-gallery');
+
+            if (tab === 'read') {
+                readSection.classList.remove('hidden');
+                gallerySection.classList.add('hidden');
+                tabRead.classList.add('active');
+                tabGallery.classList.remove('active');
+            } else {
+                readSection.classList.add('hidden');
+                gallerySection.classList.remove('hidden');
+                tabRead.classList.remove('active');
+                tabGallery.classList.add('active');
+            }
+        }
+
+        // Shuffle the deck (visual animation)
+        function shuffleDeck() {
+            const container = document.getElementById('drawn-cards');
+            container.innerHTML = '';
+            drawnCards = [];
+            
+            // Visual shuffle effect
+            const shuffleText = document.createElement('div');
+            shuffleText.className = 'text-center py-8 text-[#C5A46E] font-medium flex items-center justify-center gap-x-3';
+            shuffleText.innerHTML = `
+                <i class="fa-solid fa-sync fa-spin"></i> 
+                <span>Shuffling the desert winds...</span>
+            `;
+            container.appendChild(shuffleText);
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+                const message = document.createElement('div');
+                message.className = 'text-center py-6 text-[#8c735f] text-sm';
+                message.innerHTML = 'The deck has been shuffled. Draw your cards.';
+                container.appendChild(message);
+            }, 1200);
+        }
+
+        // Draw cards
+        function drawCards(count) {
+            const container = document.getElementById('drawn-cards');
+            container.innerHTML = '';
+            drawnCards = [];
+            
+            // Get random cards (avoid duplicates)
+            let availableCards = [...cards];
+            const selected = [];
+            
+            for (let i = 0; i < count; i++) {
+                if (availableCards.length === 0) break;
+                const randomIndex = Math.floor(Math.random() * availableCards.length);
+                const card = {...availableCards[randomIndex]}; // clone
+                card.reversed = Math.random() > 0.5; // 50% chance reversed
+                selected.push(card);
+                availableCards.splice(randomIndex, 1);
+            }
+            
+            drawnCards = selected;
+            
+            // Create card elements
+            selected.forEach((card, index) => {
+                const cardElement = createCardElement(card, true, index);
+                container.appendChild(cardElement);
+                
+                // Staggered animation
+                setTimeout(() => {
+                    cardElement.style.opacity = '1';
+                    cardElement.style.transform = 'translateY(0)';
+                }, index * 180);
+            });
+        }
+
+        // Create a single card element
+        function createCardElement(cardData, isDrawn = false, index = 0) {
+            const card = document.createElement('div');
+            let classes = `tarot-card mx-auto ${isDrawn ? 'opacity-0 translate-y-4 transition-all duration-500' : ''}`;
+            if (cardData.reversed) classes += ' reversed';
+            card.className = classes;
+            card.dataset.cardId = cardData.id;
+            card.dataset.reversed = cardData.reversed ? 'true' : 'false';
+            
+            // Try to load real generated card image (support .png and .jpg)
+            const baseName = `cards/${String(cardData.id).padStart(2, '0')}-${cardData.name.toLowerCase().replace(/\s+/g, '-')}`;
+            const imagePath = `${baseName}.png`; // Try PNG first
+            
+            card.innerHTML = `
+                <div class="tarot-card-inner shadow-xl">
+                    <!-- Front -->
+                    <div class="tarot-card-front p-3 flex flex-col">
+                        <div class="flex-1 relative overflow-hidden rounded-xl border border-[#C5A46E]/30 bg-[#f8f1e3]">
+                            <img src="${imagePath}" 
+                                 class="w-full h-full object-cover"
+                                 onerror="if (this.src.endsWith('.png')) {
+                                    this.src = '${baseName}.jpg';
+                                 } else {
+                                    this.style.display='none'; 
+                                    this.parentElement.innerHTML = \`
+                                    <div class='w-full h-full flex items-center justify-center bg-gradient-to-br from-[#f8f1e3] to-[#e8d9c2]'>
+                                        <div class='text-center p-4'>
+                                            <div class='text-[#C5A46E] text-xs tracking-widest mb-1'>${cardData.type.toUpperCase()}</div>
+                                            <div class='heading-serif text-2xl text-[#3f2a1e] leading-none mb-1'>${cardData.name}</div>
+                                            <div class='text-[#C5A46E] text-sm'>${cardData.number}</div>
+                                        </div>
+                                    </div>\`;
+                                 }">
+                            
+                            <!-- Decorative corner elements -->
+                            <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#C5A46E]/40 rounded-tl pointer-events-none"></div>
+                            <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#C5A46E]/40 rounded-tr pointer-events-none"></div>
+                            <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#C5A46E]/40 rounded-bl pointer-events-none"></div>
+                            <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#C5A46E]/40 rounded-br pointer-events-none"></div>
+                        </div>
+                        
+                        <div class="mt-3 text-center">
+                            <div class="text-[#3f2a1e] font-semibold text-sm tracking-wide">${cardData.name}</div>
+                            <div class="text-[#C5A46E] text-xs">${cardData.type}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Back -->
+                    <div class="tarot-card-back p-1 overflow-hidden">
+                        <img src="cards/back.png" 
+                             class="w-full h-full object-cover rounded-[10px]"
+                             onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(145deg, #C5A46E, #A67C52)'; this.parentElement.innerHTML = \`
+                                <div class='flex items-center justify-center h-full text-white text-center p-4'>
+                                    <div>
+                                        <i class='fa-solid fa-hat-cowboy text-4xl mb-3 opacity-90'></i>
+                                        <div class='text-xs tracking-[3px] font-semibold'>ROCCO</div>
+                                        <div class='text-xs tracking-[3px] font-semibold -mt-1'>COWBOY</div>
+                                    </div>
+                                </div>\`;">
+                    </div>
+                </div>
+            `;
+            
+            // Click to flip or show modal
+            card.addEventListener('click', () => {
+                if (isDrawn) {
+                    if (!card.classList.contains('flipped')) {
+                        card.classList.add('flipped');
+                    } else {
+                        showCardModal(cardData);
+                    }
+                } else {
+                    showCardModal(cardData);
+                }
+            });
+            
+            return card;
+        }
+
+        function getSuitColor(suit) {
+            switch(suit) {
+                case 'wands': return '#C17B6B';
+                case 'cups': return '#6B8E9F';
+                case 'swords': return '#8B7E74';
+                case 'pentacles': return '#C5A46E';
+                default: return '#C5A46E';
+            }
+        }
+
+        // Show card in modal
+        function showCardModal(cardData) {
+            const modal = document.getElementById('card-modal');
+            const modalInner = document.getElementById('modal-card-inner');
+            
+            // Reset flip state
+            modalInner.classList.remove('flipped');
+            
+            const isReversed = cardData.reversed === true;
+            
+            // Populate content
+            document.getElementById('modal-card-name').innerText = cardData.name + (isReversed ? ' (Reversed)' : '');
+            document.getElementById('modal-card-type').innerText = `${cardData.type} • ${cardData.number}`;
+            
+            // Show appropriate meaning
+            let meaningText = cardData.meaning;
+            if (isReversed && cardData.reversed_meaning) {
+                meaningText = cardData.reversed_meaning;
+            } else if (isReversed) {
+                meaningText = cardData.meaning + "\n\n(Reversed: The energy is blocked, internalized, or delayed.)";
+            }
+            document.getElementById('modal-card-meaning').innerText = meaningText;
+            
+            // Keywords
+            const keywordsContainer = document.getElementById('modal-card-keywords');
+            keywordsContainer.innerHTML = '';
+            cardData.keywords.forEach(keyword => {
+                const tag = document.createElement('span');
+                tag.className = 'px-4 py-1 bg-[#f8f1e3] text-[#3f2a1e] text-xs rounded-3xl border border-[#C5A46E]/30';
+                tag.innerText = keyword;
+                keywordsContainer.appendChild(tag);
+            });
+            
+            // Try to load real generated card image (support .png and .jpg)
+            const baseName = `cards/${String(cardData.id).padStart(2, '0')}-${cardData.name.toLowerCase().replace(/\s+/g, '-')}`;
+            const imgContainer = document.getElementById('modal-card-image');
+            
+            imgContainer.src = `${baseName}.png`;
+            imgContainer.alt = cardData.name;
+            
+            // Fallback logic: Try .png first, then .jpg
+            imgContainer.onerror = function() {
+                if (this.src.endsWith('.png')) {
+                    this.src = `${baseName}.jpg`;
+                } else {
+                    this.style.display = 'none';
+                    const parent = this.parentElement;
+                    parent.innerHTML = `
+                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#f8f1e3] to-[#e8d9c2] rounded-xl">
+                            <div class="text-center p-6">
+                                <div class="text-[#C5A46E] text-sm tracking-widest mb-2">${cardData.type.toUpperCase()}</div>
+                                <div class="heading-serif text-3xl text-[#3f2a1e] mb-1">${cardData.name}</div>
+                                <div class="text-[#C5A46E]">${cardData.number}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            };
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Allow flipping in modal
+            const visual = document.getElementById('modal-card-visual');
+            visual.onclick = () => {
+                modalInner.classList.toggle('flipped');
+            };
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('card-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        // Populate Gallery
+        function populateGallery(filteredCards = null) {
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '';
+            
+            const cardsToShow = filteredCards || cards;
+            
+            cardsToShow.forEach(cardData => {
+                const cardEl = createCardElement(cardData, false);
+                grid.appendChild(cardEl);
+            });
+        }
+
+        // Filter gallery by suit
+        function filterBySuit(suit) {
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active', 'bg-[#C5A46E]', 'text-white'));
+            event.currentTarget.classList.add('active', 'bg-[#C5A46E]', 'text-white');
+            
+            let filtered = cards;
+            
+            if (suit !== 'all') {
+                filtered = cards.filter(c => c.suit === suit);
+            }
+            
+            currentFilter = suit;
+            populateGallery(filtered);
+        }
+
+        // Search in gallery
+        function filterGallery() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            
+            let filtered = cards;
+            
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(c => c.suit === currentFilter);
+            }
+            
+            if (searchTerm.length > 0) {
+                filtered = filtered.filter(c => 
+                    c.name.toLowerCase().includes(searchTerm) || 
+                    c.meaning.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            populateGallery(filtered);
+        }
+
+        // Initialize everything
+        window.onload = function() {
+            initApp();
+            
+            // Demo: Draw 3 cards on first load (optional)
+            setTimeout(() => {
+                // Uncomment the line below if you want auto-draw on load
+                // drawCards(3);
+            }, 800);
+        };
+    </script>
+</body>
+</html>
