@@ -34,16 +34,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;family=Inter:wght@300;400;500&amp;display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500&display=swap');
         
         :root {
-            --gold: #C5A46E;
-            --desert: #D4B896;
-            --rose: #C17B6B;
+            --gold: #E8C87A;
+            --gold-dim: #C9A86C;
+            --desert-dark: #1C1612;
+            --desert-mid: #2A221C;
+            --rose: #A66B5B;
+            --cream: #E8D9C2;
+            --text-light: #EDE4D7;
+            --text-muted: #A89880;
         }
         
         body {
-            font-family: 'Inter', system_ui, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: 
+                radial-gradient(ellipse at top, #2A221C 0%, #1C1612 45%, #0F0C0A 100%);
+            min-height: 100vh;
+            color: var(--text-light);
         }
         
         .heading-serif {
@@ -52,15 +61,16 @@
         }
 
         .tarot-card {
-            width: 180px;
-            height: 300px;
+            width: 150px;
+            height: 250px;
             perspective: 1000px;
             cursor: pointer;
             transition: transform 0.3s ease;
+            position: relative;
         }
         
         .tarot-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-6px);
         }
         
         .tarot-card-inner {
@@ -70,7 +80,7 @@
             text-align: center;
             transition: transform 0.6s;
             transform-style: preserve-3d;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
             border-radius: 12px;
             overflow: hidden;
         }
@@ -98,20 +108,20 @@
         }
         
         .tarot-card-front {
-            background: linear-gradient(145deg, #f8f1e3, #e8d9c2);
-            border: 8px solid #C5A46E;
+            background: linear-gradient(145deg, #2F2720, #1E1814);
+            border: 6px solid var(--gold);
         }
         
         .tarot-card-back {
-            background: linear-gradient(145deg, #C5A46E, #A67C52);
+            background: linear-gradient(145deg, #8B7355, #5C4A38);
             transform: rotateY(180deg);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 1.1rem;
+            color: var(--cream);
+            font-size: 1rem;
             font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
         
         .card-image {
@@ -121,33 +131,31 @@
             border-radius: 4px;
         }
         
-        .deck-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            justify-content: center;
-        }
-        
         .section-tab {
             transition: all 0.3s ease;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            cursor: pointer;
         }
         
         .section-tab.active {
-            border-bottom: 3px solid #C5A46E;
-            color: #C5A46E;
+            color: #1C1612;
             font-weight: 600;
+            background: var(--gold);
         }
         
         .modal {
             animation: fadeInScale 0.3s ease forwards;
         }
         
-        .rocco-gold {
-            color: #C5A46E;
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
         
-        .desert-bg {
-            background: linear-gradient(to bottom, #f8f1e3, #e8d9c2);
+        .rocco-gold {
+            color: var(--gold);
         }
         
         .tarot-meaning {
@@ -157,40 +165,354 @@
         
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
             gap: 1.25rem;
+        }
+        
+        /* ===== SPREAD LAYOUTS ===== */
+        .spread-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            min-height: 320px;
+        }
+        
+        .spread-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: var(--gold);
+            font-size: 1.25rem;
+            letter-spacing: 0.05em;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .position-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--gold);
+            text-align: center;
+            margin-top: 0.4rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        
+        .card-with-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* Single Card */
+        .spread-single {
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* Three Card - Past / Present / Future */
+        .spread-three {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.75rem;
+        }
+        
+        /* Five Card Cross */
+        .spread-five-cross {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 1rem 1.5rem;
+            justify-items: center;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        .spread-five-cross .pos-1 { grid-column: 2; grid-row: 1; } /* Above */
+        .spread-five-cross .pos-2 { grid-column: 1; grid-row: 2; } /* Left */
+        .spread-five-cross .pos-3 { grid-column: 2; grid-row: 2; } /* Center */
+        .spread-five-cross .pos-4 { grid-column: 3; grid-row: 2; } /* Right */
+        .spread-five-cross .pos-5 { grid-column: 2; grid-row: 3; } /* Below */
+        
+        /* Horseshoe / 7 Card */
+        .spread-horseshoe {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        /* Celtic Cross (10 cards) */
+        .spread-celtic {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-template-rows: repeat(4, auto);
+            gap: 0.75rem 1rem;
+            max-width: 780px;
+            margin: 0 auto;
+            justify-items: center;
+        }
+        /* Layout approximation of classic Celtic Cross */
+        .spread-celtic .pos-1 { grid-column: 2; grid-row: 2; } /* Present */
+        .spread-celtic .pos-2 { grid-column: 2; grid-row: 2; transform: rotate(90deg); z-index: 2; margin-top: 40px; } /* Crossing - simplified */
+        .spread-celtic .pos-3 { grid-column: 2; grid-row: 3; } /* Below / Foundation */
+        .spread-celtic .pos-4 { grid-column: 1; grid-row: 2; } /* Left / Recent past */
+        .spread-celtic .pos-5 { grid-column: 2; grid-row: 1; } /* Above / Crowning */
+        .spread-celtic .pos-6 { grid-column: 3; grid-row: 2; } /* Right / Near future */
+        .spread-celtic .pos-7 { grid-column: 5; grid-row: 4; } /* Staff bottom - Self */
+        .spread-celtic .pos-8 { grid-column: 5; grid-row: 3; } /* Environment */
+        .spread-celtic .pos-9 { grid-column: 5; grid-row: 2; } /* Hopes/Fears */
+        .spread-celtic .pos-10 { grid-column: 5; grid-row: 1; } /* Outcome */
+        
+        /* Better Celtic Cross layout using flex for staff */
+        .celtic-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            align-items: flex-start;
+            max-width: 860px;
+            margin: 0 auto;
+        }
+        .celtic-cross {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 0.6rem 1.1rem;
+            justify-items: center;
+        }
+        .celtic-cross .c-pos-5 { grid-column: 2; grid-row: 1; } /* Crowning */
+        .celtic-cross .c-pos-4 { grid-column: 1; grid-row: 2; } /* Past */
+        .celtic-cross .c-pos-1 { grid-column: 2; grid-row: 2; } /* Present */
+        .celtic-cross .c-pos-6 { grid-column: 3; grid-row: 2; } /* Future */
+        .celtic-cross .c-pos-3 { grid-column: 2; grid-row: 3; } /* Foundation */
+        .celtic-staff {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        
+        /* Spread selector buttons */
+        .spread-btn {
+            transition: all 0.25s ease;
+            border: 1px solid rgba(232, 200, 122, 0.4);
+            background: #2A221C;
+            color: #A89880;
+            border-radius: 9999px;
+            padding: 0.7rem 1.4rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .spread-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: #352C24;
+        }
+        .spread-btn.active {
+            background: linear-gradient(135deg, #E8C87A, #C9A86C);
+            border-color: #E8C87A;
+            color: #1C1612;
+            box-shadow: 0 0 20px rgba(232, 200, 122, 0.3);
+            font-weight: 600;
+        }
+        
+        /* Primary action buttons (Shuffle / Draw) */
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #2A221C;
+            color: #EDE4D7;
+            border: 1px solid rgba(232, 200, 122, 0.45);
+            border-radius: 9999px;
+            padding: 0.85rem 2rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-secondary:hover {
+            background: #352C24;
+            box-shadow: 0 0 20px rgba(232, 200, 122, 0.2);
+        }
+        .btn-secondary i {
+            color: var(--gold);
+        }
+        
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, #E8C87A, #C9A86C);
+            color: #1C1612;
+            border: 1px solid rgba(232, 200, 122, 0.6);
+            border-radius: 9999px;
+            padding: 0.9rem 2.4rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #F0D48A, #D4B06A);
+            box-shadow: 0 0 24px rgba(232, 200, 122, 0.35);
+        }
+        
+        /* Header */
+        .header-glass {
+            background: rgba(28, 22, 18, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(232, 200, 122, 0.25);
+        }
+        
+        .header-inner {
+            max-width: 72rem;
+            margin: 0 auto;
+            padding: 1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.85rem;
+        }
+        
+        @media (min-width: 640px) {
+            .header-inner {
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 1.15rem 1.5rem;
+            }
+        }
+        
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+        
+        .header-logo {
+            width: 2.75rem;
+            height: 2.75rem;
+            background: linear-gradient(135deg, #E8C87A, #C9A86C);
+            border-radius: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+            flex-shrink: 0;
+        }
+        
+        .header-logo i {
+            color: #1C1612;
+            font-size: 1.35rem;
+        }
+        
+        .tab-group {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: #2A221C;
+            border-radius: 9999px;
+            padding: 0.25rem;
+            border: 1px solid rgba(232, 200, 122, 0.3);
+        }
+        
+        .tab-group .section-tab {
+            padding: 0.55rem 1.25rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        /* Controls area */
+        .controls-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+            width: 100%;
+        }
+        
+        .spread-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.65rem;
+            max-width: 36rem;
+            padding: 0 0.5rem;
+        }
+        
+        /* Soft gold glow on interactive elements */
+        .gold-glow:hover {
+            box-shadow: 0 0 24px rgba(232, 200, 122, 0.3);
         }
         
         @media (max-width: 640px) {
             .tarot-card {
-                width: 140px;
-                height: 240px;
+                width: 110px;
+                height: 185px;
             }
+            .celtic-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+            .spread-five-cross {
+                gap: 0.6rem 0.8rem;
+            }
+            .spread-btn {
+                padding: 0.6rem 1.1rem;
+                font-size: 0.8rem;
+            }
+            .btn-secondary, .btn-primary {
+                padding: 0.75rem 1.6rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Scrollbar for meanings */
+        .tarot-meaning::-webkit-scrollbar {
+            width: 6px;
+        }
+        .tarot-meaning::-webkit-scrollbar-track {
+            background: #2A221C;
+        }
+        .tarot-meaning::-webkit-scrollbar-thumb {
+            background: var(--gold-dim);
+            border-radius: 3px;
         }
     </style>
 </head>
-<body class="bg-[#f8f1e3] text-[#3f2a1e]">
+<body>
     <!-- Header -->
-    <div class="border-b border-[#C5A46E]/30 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-            <div class="flex items-center gap-x-4">
-                <div class="w-12 h-12 bg-[#C5A46E] rounded-2xl flex items-center justify-center shadow-inner">
-                    <i class="fa-solid fa-hat-cowboy text-white text-3xl"></i>
+    <div class="header-glass sticky top-0 z-50">
+        <div class="header-inner">
+            <div class="header-brand">
+                <div class="header-logo">
+                    <i class="fa-solid fa-hat-cowboy"></i>
                 </div>
                 <div>
-                    <h1 class="heading-serif text-3xl tracking-tight text-[#3f2a1e]">Rococo Cowboy</h1>
-                    <p class="text-xs text-[#C5A46E] font-medium tracking-[2px]">TAROT</p>
+                    <h1 class="heading-serif text-2xl sm:text-3xl tracking-tight text-[#EDE4D7]" style="margin:0;line-height:1.15;">Rococo Cowboy</h1>
+                    <p class="text-xs font-medium tracking-[2px]" style="color:var(--gold);margin:0;">TAROT</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-x-2 bg-white rounded-3xl p-1 shadow-sm border border-[#C5A46E]/20">
-                <button onclick="switchTab('read')" id="tab-read"
-                        class="section-tab active px-6 py-2.5 text-sm font-medium rounded-3xl flex items-center gap-x-2">
+            <div class="tab-group">
+                <button onclick="switchTab('read')" id="tab-read" class="section-tab active">
                     <i class="fa-solid fa-magic"></i>
                     <span>Read</span>
                 </button>
-                <button onclick="switchTab('gallery')" id="tab-gallery"
-                        class="section-tab px-6 py-2.5 text-sm font-medium rounded-3xl flex items-center gap-x-2">
+                <button onclick="switchTab('gallery')" id="tab-gallery" class="section-tab">
                     <i class="fa-solid fa-book-open"></i>
                     <span>Gallery</span>
                 </button>
@@ -199,34 +521,51 @@
     </div>
 
     <!-- READ SECTION -->
-    <div id="section-read" class="max-w-6xl mx-auto px-6 pt-10 pb-16">
-        <div class="text-center mb-10">
-            <h2 class="heading-serif text-5xl tracking-tighter mb-3">Draw Your Cards</h2>
-            <p class="text-[#6b5746] max-w-md mx-auto">Shuffle the deck and receive guidance from the desert winds.</p>
+    <div id="section-read" class="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-16">
+        <div class="text-center mb-8 sm:mb-10">
+            <h2 class="heading-serif text-4xl sm:text-5xl tracking-tighter mb-3 text-[#EDE4D7]" style="margin-top:0;">Draw Your Cards</h2>
+            <p class="text-[#A89880] max-w-md mx-auto" style="margin:0 auto;">Shuffle the deck and receive guidance from the desert night.</p>
         </div>
 
         <!-- Controls -->
-        <div class="flex flex-wrap justify-center gap-4 mb-10">
-            <button onclick="shuffleDeck()" 
-                    class="flex items-center gap-x-3 bg-white hover:bg-[#f8f1e3] transition-colors border border-[#C5A46E] text-[#3f2a1e] px-8 py-3.5 rounded-3xl font-medium shadow-sm">
+        <div class="controls-wrap">
+            <button onclick="shuffleDeck()" class="btn-secondary gold-glow">
                 <i class="fa-solid fa-sync-alt"></i>
                 <span>Shuffle Deck</span>
             </button>
             
-            <div class="flex bg-white border border-[#C5A46E] rounded-3xl p-1 shadow-sm">
-                <button onclick="drawCards(1)" class="px-6 py-3 text-sm font-medium rounded-3xl hover:bg-[#f8f1e3] transition-colors">1 Card</button>
-                <button onclick="drawCards(3)" class="px-6 py-3 text-sm font-medium rounded-3xl hover:bg-[#f8f1e3] transition-colors">3 Cards</button>
-                <button onclick="drawCards(5)" class="px-6 py-3 text-sm font-medium rounded-3xl hover:bg-[#f8f1e3] transition-colors">5 Cards</button>
+            <!-- Spread Selector -->
+            <div class="spread-row">
+                <button onclick="selectSpread('single')" class="spread-btn active" data-spread="single">
+                    Single Card
+                </button>
+                <button onclick="selectSpread('three')" class="spread-btn" data-spread="three">
+                    Past · Present · Future
+                </button>
+                <button onclick="selectSpread('five')" class="spread-btn" data-spread="five">
+                    Five-Card Cross
+                </button>
+                <button onclick="selectSpread('horseshoe')" class="spread-btn" data-spread="horseshoe">
+                    Horseshoe
+                </button>
+                <button onclick="selectSpread('celtic')" class="spread-btn" data-spread="celtic">
+                    Celtic Cross
+                </button>
             </div>
+            
+            <button onclick="drawSelectedSpread()" class="btn-primary gold-glow">
+                <i class="fa-solid fa-cards"></i>
+                <span>Draw Spread</span>
+            </button>
         </div>
 
-        <!-- Drawn Cards -->
-        <div id="drawn-cards" class="flex flex-wrap justify-center gap-8 min-h-[340px]">
+        <!-- Drawn Cards / Spread Display -->
+        <div id="drawn-cards" class="spread-container">
             <!-- Cards will be dynamically added here -->
         </div>
         
-        <div class="text-center mt-8 text-xs text-[#8c735f]">
-            Click any card to reveal its meaning
+        <div class="text-center mt-10 text-xs text-[#A89880]">
+            Click any card to flip it, then click again for its full meaning
         </div>
     </div>
 
@@ -234,27 +573,27 @@
     <div id="section-gallery" class="max-w-7xl mx-auto px-6 pt-8 pb-16 hidden">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-y-4 mb-8">
             <div>
-                <h2 class="heading-serif text-4xl tracking-tight">The Full Deck</h2>
-                <p class="text-[#6b5746]">Explore all 78 cards of the Rococo Cowboy Tarot</p>
+                <h2 class="heading-serif text-4xl tracking-tight text-[#EDE4D7]">The Full Deck</h2>
+                <p class="text-[#A89880]">Explore all 78 cards of the Rococo Cowboy Tarot</p>
             </div>
             
             <!-- Search -->
             <div class="relative w-full md:w-80">
                 <input type="text" id="search-input" placeholder="Search cards..." 
                        onkeyup="filterGallery()"
-                       class="w-full bg-white border border-[#C5A46E]/40 focus:border-[#C5A46E] transition-colors pl-11 py-3 rounded-3xl text-sm outline-none">
-                <i class="fa-solid fa-search absolute left-4 top-4 text-[#C5A46E]"></i>
+                       class="w-full bg-[#2A221C] border border-[#C9A86C]/30 focus:border-[#C9A86C] transition-colors pl-11 py-3 rounded-3xl text-sm outline-none text-[#EDE4D7] placeholder-[#A89880]">
+                <i class="fa-solid fa-search absolute left-4 top-4 text-[#C9A86C]"></i>
             </div>
         </div>
 
         <!-- Filters -->
-        <div class="flex flex-wrap gap-2 mb-8" id="filter-buttons">
-            <button onclick="filterBySuit('all')" class="filter-btn active px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] bg-[#C5A46E] text-white">All</button>
-            <button onclick="filterBySuit('major')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] hover:bg-[#f8f1e3]">Major Arcana</button>
-            <button onclick="filterBySuit('wands')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] hover:bg-[#f8f1e3]">Wands</button>
-            <button onclick="filterBySuit('cups')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] hover:bg-[#f8f1e3]">Cups</button>
-            <button onclick="filterBySuit('swords')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] hover:bg-[#f8f1e3]">Swords</button>
-            <button onclick="filterBySuit('pentacles')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl border border-[#C5A46E] hover:bg-[#f8f1e3]">Pentacles</button>
+        <div class="flex flex-wrap justify-center gap-3 mb-8" id="filter-buttons">
+            <button onclick="filterBySuit('all')" class="filter-btn active px-5 py-2 text-sm rounded-full border border-[#E8C87A] bg-[#E8C87A] text-[#1C1612] font-medium">All</button>
+            <button onclick="filterBySuit('major')" class="filter-btn px-5 py-2 text-sm rounded-full border border-[#E8C87A]/40 text-[#A89880] hover:border-[#E8C87A] hover:text-[#E8C87A]">Major Arcana</button>
+            <button onclick="filterBySuit('wands')" class="filter-btn px-5 py-2 text-sm rounded-full border border-[#E8C87A]/40 text-[#A89880] hover:border-[#E8C87A] hover:text-[#E8C87A]">Wands</button>
+            <button onclick="filterBySuit('cups')" class="filter-btn px-5 py-2 text-sm rounded-full border border-[#E8C87A]/40 text-[#A89880] hover:border-[#E8C87A] hover:text-[#E8C87A]">Cups</button>
+            <button onclick="filterBySuit('swords')" class="filter-btn px-5 py-2 text-sm rounded-full border border-[#E8C87A]/40 text-[#A89880] hover:border-[#E8C87A] hover:text-[#E8C87A]">Swords</button>
+            <button onclick="filterBySuit('pentacles')" class="filter-btn px-5 py-2 text-sm rounded-full border border-[#E8C87A]/40 text-[#A89880] hover:border-[#E8C87A] hover:text-[#E8C87A]">Pentacles</button>
         </div>
 
         <!-- Card Grid -->
@@ -264,15 +603,15 @@
     </div>
 
     <!-- Card Detail Modal -->
-    <div id="card-modal" onclick="closeModal()" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
-        <div onclick="event.stopImmediatePropagation()" class="bg-white max-w-2xl w-full rounded-3xl overflow-hidden shadow-2xl">
+    <div id="card-modal" onclick="closeModal()" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+        <div onclick="event.stopImmediatePropagation()" class="bg-[#2A221C] max-w-2xl w-full rounded-3xl overflow-hidden shadow-2xl border border-[#C9A86C]/25">
             <div class="flex flex-col md:flex-row">
                 <!-- Card Visual -->
-                <div class="md:w-5/12 bg-[#f8f1e3] p-8 flex items-center justify-center">
+                <div class="md:w-5/12 bg-[#1C1612] p-8 flex items-center justify-center">
                     <div id="modal-card-visual" class="tarot-card w-[200px] h-[330px] cursor-default">
                         <div class="tarot-card-inner" id="modal-card-inner">
                             <div class="tarot-card-front p-3 flex items-center justify-center">
-                                <img id="modal-card-image" class="max-h-full rounded-xl shadow-inner border border-[#C5A46E]/30" alt="Card">
+                                <img id="modal-card-image" class="max-h-full rounded-xl shadow-inner border border-[#C9A86C]/30" alt="Card">
                             </div>
                             <div class="tarot-card-back flex items-center justify-center text-center p-6">
                                 <div>
@@ -288,21 +627,21 @@
                 <div class="md:w-7/12 p-8">
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            <h3 id="modal-card-name" class="heading-serif text-3xl tracking-tight"></h3>
-                            <p id="modal-card-type" class="text-[#C5A46E] text-sm font-medium"></p>
+                            <h3 id="modal-card-name" class="heading-serif text-3xl tracking-tight text-[#EDE4D7]"></h3>
+                            <p id="modal-card-type" class="text-[#C9A86C] text-sm font-medium"></p>
                         </div>
-                        <button onclick="closeModal()" class="text-[#C5A46E] hover:text-[#3f2a1e]">
+                        <button onclick="closeModal()" class="text-[#C9A86C] hover:text-[#EDE4D7] transition-colors">
                             <i class="fa-solid fa-times text-2xl"></i>
                         </button>
                     </div>
                     
                     <div class="mb-6">
-                        <div class="uppercase tracking-[1.5px] text-xs font-semibold text-[#C5A46E] mb-1.5">Meaning</div>
-                        <div id="modal-card-meaning" class="tarot-meaning text-[#3f2a1e] leading-relaxed text-[15px]"></div>
+                        <div class="uppercase tracking-[1.5px] text-xs font-semibold text-[#C9A86C] mb-1.5">Meaning</div>
+                        <div id="modal-card-meaning" class="tarot-meaning text-[#EDE4D7] leading-relaxed text-[15px]"></div>
                     </div>
                     
                     <div>
-                        <div class="uppercase tracking-[1.5px] text-xs font-semibold text-[#C5A46E] mb-2">Keywords</div>
+                        <div class="uppercase tracking-[1.5px] text-xs font-semibold text-[#C9A86C] mb-2">Keywords</div>
                         <div id="modal-card-keywords" class="flex flex-wrap gap-2"></div>
                     </div>
                 </div>
@@ -311,11 +650,6 @@
     </div>
 
     <script>
-        // Tailwind script
-        function initializeTailwind() {
-            document.documentElement.style.setProperty('--accent-gold', '#C5A46E');
-        }
-        
         // Card Data - Complete 78 cards with meanings
         const cards = [
             // Major Arcana
@@ -636,12 +970,73 @@
               keywords: ["Wealth", "Stability", "Leadership", "Generosity"] }
         ];
 
+        // ===== SPREAD DEFINITIONS =====
+        const spreads = {
+            single: {
+                name: "Single Card",
+                count: 1,
+                positions: ["The Message"],
+                layout: "single"
+            },
+            three: {
+                name: "Past · Present · Future",
+                count: 3,
+                positions: ["Past", "Present", "Future"],
+                layout: "three"
+            },
+            five: {
+                name: "Five-Card Cross",
+                count: 5,
+                positions: [
+                    "Situation",      // center top conceptually, but mapped
+                    "Challenge",
+                    "Past Influence",
+                    "Near Future",
+                    "Outcome"
+                ],
+                // Visual order for the cross layout
+                visualOrder: [0, 1, 2, 3, 4], // will map to grid classes
+                layout: "five"
+            },
+            horseshoe: {
+                name: "Horseshoe Spread",
+                count: 7,
+                positions: [
+                    "Past",
+                    "Present",
+                    "Hidden Influences",
+                    "Obstacles",
+                    "Environment",
+                    "Advice",
+                    "Outcome"
+                ],
+                layout: "horseshoe"
+            },
+            celtic: {
+                name: "Celtic Cross",
+                count: 10,
+                positions: [
+                    "Present Situation",
+                    "Immediate Challenge",
+                    "Distant Past / Foundation",
+                    "Recent Past",
+                    "Possible Outcome",
+                    "Near Future",
+                    "Your Attitude",
+                    "External Influences",
+                    "Hopes & Fears",
+                    "Final Outcome"
+                ],
+                layout: "celtic"
+            }
+        };
+
         let currentFilter = 'all';
         let drawnCards = [];
+        let selectedSpreadKey = 'single';
 
         // Initialize the app
         function initApp() {
-            initializeTailwind();
             populateGallery();
             
             // Show read section by default
@@ -658,8 +1053,7 @@
                 }
             });
             
-            // Initial shuffle message
-            console.log('%c[Rococo Cowboy Tarot] Web app initialized successfully', 'color:#C5A46E');
+            console.log('%c[Rococo Cowboy Tarot] Dark theme + spreads initialized', 'color:#C9A86C');
         }
 
         // Switch between Read and Gallery tabs
@@ -682,6 +1076,17 @@
             }
         }
 
+        // Select a spread type
+        function selectSpread(key) {
+            selectedSpreadKey = key;
+            document.querySelectorAll('.spread-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.spread === key) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
         // Shuffle the deck (visual animation)
         function shuffleDeck() {
             const container = document.getElementById('drawn-cards');
@@ -690,74 +1095,212 @@
             
             // Visual shuffle effect
             const shuffleText = document.createElement('div');
-            shuffleText.className = 'text-center py-8 text-[#C5A46E] font-medium flex items-center justify-center gap-x-3';
+            shuffleText.className = 'text-center py-12 text-[#C9A86C] font-medium flex items-center justify-center gap-x-3';
             shuffleText.innerHTML = `
-                <i class="fa-solid fa-sync fa-spin"></i> 
-                <span>Shuffling the desert winds...</span>
+                <i class="fa-solid fa-sync fa-spin text-2xl"></i> 
+                <span class="text-lg">Shuffling the desert night...</span>
             `;
             container.appendChild(shuffleText);
             
             setTimeout(() => {
                 container.innerHTML = '';
                 const message = document.createElement('div');
-                message.className = 'text-center py-6 text-[#8c735f] text-sm';
-                message.innerHTML = 'The deck has been shuffled. Draw your cards.';
+                message.className = 'text-center py-8 text-[#A89880] text-sm';
+                message.innerHTML = 'The deck has been shuffled under the stars. Choose a spread and draw.';
                 container.appendChild(message);
-            }, 1200);
+            }, 1300);
         }
 
-        // Draw cards
-        function drawCards(count) {
+        // Draw the currently selected spread
+        function drawSelectedSpread() {
+            const spread = spreads[selectedSpreadKey];
+            if (!spread) return;
+            
             const container = document.getElementById('drawn-cards');
             container.innerHTML = '';
             drawnCards = [];
             
-            // Get random cards (avoid duplicates)
+            // Get random cards (no duplicates)
             let availableCards = [...cards];
             const selected = [];
             
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < spread.count; i++) {
                 if (availableCards.length === 0) break;
                 const randomIndex = Math.floor(Math.random() * availableCards.length);
-                const card = {...availableCards[randomIndex]}; // clone
-                card.reversed = Math.random() > 0.5; // 50% chance reversed
+                const card = {...availableCards[randomIndex]};
+                card.reversed = Math.random() > 0.55; // slightly less than 50% reversed
+                card.positionLabel = spread.positions[i] || `Position ${i + 1}`;
                 selected.push(card);
                 availableCards.splice(randomIndex, 1);
             }
             
             drawnCards = selected;
             
-            // Create card elements
-            selected.forEach((card, index) => {
-                const cardElement = createCardElement(card, true, index);
-                container.appendChild(cardElement);
+            // Build the layout
+            renderSpread(container, selected, spread);
+        }
+
+        function renderSpread(container, selected, spread) {
+            // Title
+            const title = document.createElement('div');
+            title.className = 'spread-title';
+            title.textContent = spread.name;
+            container.appendChild(title);
+            
+            if (spread.layout === 'single') {
+                const wrap = document.createElement('div');
+                wrap.className = 'spread-single';
+                selected.forEach((card, index) => {
+                    wrap.appendChild(createLabeledCard(card, index));
+                });
+                container.appendChild(wrap);
+            }
+            else if (spread.layout === 'three') {
+                const wrap = document.createElement('div');
+                wrap.className = 'spread-three';
+                selected.forEach((card, index) => {
+                    wrap.appendChild(createLabeledCard(card, index));
+                });
+                container.appendChild(wrap);
+            }
+            else if (spread.layout === 'five') {
+                // Cross layout: Situation (center conceptually), but we map:
+                // visual: top = situation, left = challenge, center = past, right = near future, bottom = outcome
+                // For clarity we use the positions array as-is and place them in a nice cross
+                const wrap = document.createElement('div');
+                wrap.className = 'spread-five-cross';
                 
-                // Staggered animation
+                // Re-order for visual cross: 
+                // pos1 (top) = Situation, pos2 (left) = Challenge, pos3 (center) = Past Influence,
+                // pos4 (right) = Near Future, pos5 (bottom) = Outcome
+                const visualMap = [0, 1, 2, 3, 4]; // keep sequential but style with classes
+                selected.forEach((card, index) => {
+                    const el = createLabeledCard(card, index);
+                    el.classList.add(`pos-${index + 1}`);
+                    wrap.appendChild(el);
+                });
+                container.appendChild(wrap);
+            }
+            else if (spread.layout === 'horseshoe') {
+                const wrap = document.createElement('div');
+                wrap.className = 'spread-horseshoe';
+                selected.forEach((card, index) => {
+                    wrap.appendChild(createLabeledCard(card, index));
+                });
+                container.appendChild(wrap);
+            }
+            else if (spread.layout === 'celtic') {
+                // Classic Celtic Cross approximation
+                // Cards 0-5 form the cross, 6-9 form the staff on the right
+                const wrapper = document.createElement('div');
+                wrapper.className = 'celtic-wrapper';
+                
+                // Cross part (first 6 cards conceptually, but we use a simplified visual)
+                // Standard: 1 present, 2 crossing, 3 below, 4 left, 5 above, 6 right
+                // We skip the physical cross rotation for simplicity and use a clean grid + staff
+                
+                const cross = document.createElement('div');
+                cross.className = 'celtic-cross';
+                
+                // Map:
+                // 0 Present  -> center
+                // 1 Challenge -> we place near center (simplified, no rotation)
+                // 2 Foundation -> bottom
+                // 3 Recent Past -> left
+                // 4 Possible Outcome / Crowning -> top
+                // 5 Near Future -> right
+                
+                const crossOrder = [
+                    { cardIndex: 4, className: 'c-pos-5' }, // top
+                    { cardIndex: 3, className: 'c-pos-4' }, // left
+                    { cardIndex: 0, className: 'c-pos-1' }, // center present
+                    { cardIndex: 5, className: 'c-pos-6' }, // right
+                    { cardIndex: 2, className: 'c-pos-3' }, // bottom
+                ];
+                
+                // Also include the crossing card (index 1) next to present
+                // For cleanliness we put Challenge under the present label or beside
+                
+                crossOrder.forEach(item => {
+                    const card = selected[item.cardIndex];
+                    const el = createLabeledCard(card, item.cardIndex);
+                    el.classList.add(item.className);
+                    cross.appendChild(el);
+                });
+                
+                // Add the Challenge card (index 1) as an extra under the center area
+                const challengeEl = createLabeledCard(selected[1], 1);
+                challengeEl.style.gridColumn = '2';
+                challengeEl.style.gridRow = '2';
+                challengeEl.style.marginTop = '12px';
+                challengeEl.style.opacity = '0.95';
+                // We'll append it after so it appears below present in the same cell-ish
+                
+                wrapper.appendChild(cross);
+                
+                // Staff (cards 6-9)
+                const staff = document.createElement('div');
+                staff.className = 'celtic-staff';
+                for (let i = 6; i < 10; i++) {
+                    staff.appendChild(createLabeledCard(selected[i], i));
+                }
+                
+                wrapper.appendChild(staff);
+                container.appendChild(wrapper);
+                
+                // Note about Challenge card for clarity
+                const note = document.createElement('div');
+                note.className = 'text-center text-xs text-[#A89880] mt-2 max-w-md';
+                note.innerHTML = 'The card labeled “Immediate Challenge” sits at the heart of the cross.';
+                container.appendChild(note);
+            }
+            
+            // Staggered entrance animation
+            const allCards = container.querySelectorAll('.tarot-card');
+            allCards.forEach((cardEl, idx) => {
+                cardEl.style.opacity = '0';
+                cardEl.style.transform = 'translateY(16px)';
                 setTimeout(() => {
-                    cardElement.style.opacity = '1';
-                    cardElement.style.transform = 'translateY(0)';
-                }, index * 180);
+                    cardEl.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    cardEl.style.opacity = '1';
+                    cardEl.style.transform = 'translateY(0)';
+                }, idx * 120);
             });
+        }
+
+        function createLabeledCard(cardData, index) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'card-with-label';
+            
+            const cardEl = createCardElement(cardData, true, index);
+            wrapper.appendChild(cardEl);
+            
+            const label = document.createElement('div');
+            label.className = 'position-label';
+            label.textContent = cardData.positionLabel || `Position ${index + 1}`;
+            wrapper.appendChild(label);
+            
+            return wrapper;
         }
 
         // Create a single card element
         function createCardElement(cardData, isDrawn = false, index = 0) {
             const card = document.createElement('div');
-            let classes = `tarot-card mx-auto ${isDrawn ? 'opacity-0 translate-y-4 transition-all duration-500' : ''}`;
+            let classes = `tarot-card mx-auto ${isDrawn ? '' : ''}`;
             if (cardData.reversed) classes += ' reversed';
             card.className = classes;
             card.dataset.cardId = cardData.id;
             card.dataset.reversed = cardData.reversed ? 'true' : 'false';
             
-            // Try to load real generated card image (support .png and .jpg)
+            // Try to load real generated card image
             const baseName = `cards/${String(cardData.id).padStart(2, '0')}-${cardData.name.toLowerCase().replace(/\s+/g, '-')}`;
-            const imagePath = `${baseName}.png`; // Try PNG first
+            const imagePath = `${baseName}.png`;
             
             card.innerHTML = `
                 <div class="tarot-card-inner shadow-xl">
                     <!-- Front -->
-                    <div class="tarot-card-front p-3 flex flex-col">
-                        <div class="flex-1 relative overflow-hidden rounded-xl border border-[#C5A46E]/30 bg-[#f8f1e3]">
+                    <div class="tarot-card-front p-2.5 flex flex-col">
+                        <div class="flex-1 relative overflow-hidden rounded-lg border border-[#C9A86C]/25 bg-[#1C1612]">
                             <img src="${imagePath}" 
                                  class="w-full h-full object-cover"
                                  onerror="if (this.src.endsWith('.png')) {
@@ -765,25 +1308,25 @@
                                  } else {
                                     this.style.display='none'; 
                                     this.parentElement.innerHTML = \`
-                                    <div class='w-full h-full flex items-center justify-center bg-gradient-to-br from-[#f8f1e3] to-[#e8d9c2]'>
-                                        <div class='text-center p-4'>
-                                            <div class='text-[#C5A46E] text-xs tracking-widest mb-1'>${cardData.type.toUpperCase()}</div>
-                                            <div class='heading-serif text-2xl text-[#3f2a1e] leading-none mb-1'>${cardData.name}</div>
-                                            <div class='text-[#C5A46E] text-sm'>${cardData.number}</div>
+                                    <div class='w-full h-full flex items-center justify-center bg-gradient-to-br from-[#2A221C] to-[#1C1612]'>
+                                        <div class='text-center p-3'>
+                                            <div class='text-[#C9A86C] text-[10px] tracking-widest mb-1'>${cardData.type.toUpperCase()}</div>
+                                            <div class='heading-serif text-xl text-[#EDE4D7] leading-none mb-1'>${cardData.name}</div>
+                                            <div class='text-[#C9A86C] text-xs'>${cardData.number}</div>
                                         </div>
                                     </div>\`;
                                  }">
                             
                             <!-- Decorative corner elements -->
-                            <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#C5A46E]/40 rounded-tl pointer-events-none"></div>
-                            <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#C5A46E]/40 rounded-tr pointer-events-none"></div>
-                            <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#C5A46E]/40 rounded-bl pointer-events-none"></div>
-                            <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#C5A46E]/40 rounded-br pointer-events-none"></div>
+                            <div class="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 border-[#C9A86C]/35 rounded-tl pointer-events-none"></div>
+                            <div class="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 border-[#C9A86C]/35 rounded-tr pointer-events-none"></div>
+                            <div class="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-[#C9A86C]/35 rounded-bl pointer-events-none"></div>
+                            <div class="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-[#C9A86C]/35 rounded-br pointer-events-none"></div>
                         </div>
                         
-                        <div class="mt-3 text-center">
-                            <div class="text-[#3f2a1e] font-semibold text-sm tracking-wide">${cardData.name}</div>
-                            <div class="text-[#C5A46E] text-xs">${cardData.type}</div>
+                        <div class="mt-2 text-center">
+                            <div class="text-[#EDE4D7] font-semibold text-xs tracking-wide leading-tight">${cardData.name}</div>
+                            <div class="text-[#C9A86C] text-[10px]">${cardData.type}</div>
                         </div>
                     </div>
                     
@@ -791,12 +1334,12 @@
                     <div class="tarot-card-back p-1 overflow-hidden">
                         <img src="cards/back.png" 
                              class="w-full h-full object-cover rounded-[10px]"
-                             onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(145deg, #C5A46E, #A67C52)'; this.parentElement.innerHTML = \`
-                                <div class='flex items-center justify-center h-full text-white text-center p-4'>
+                             onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(145deg, #8B7355, #5C4A38)'; this.parentElement.innerHTML = \`
+                                <div class='flex items-center justify-center h-full text-[#EDE4D7] text-center p-3'>
                                     <div>
-                                        <i class='fa-solid fa-hat-cowboy text-4xl mb-3 opacity-90'></i>
-                                        <div class='text-xs tracking-[3px] font-semibold'>ROCCO</div>
-                                        <div class='text-xs tracking-[3px] font-semibold -mt-1'>COWBOY</div>
+                                        <i class='fa-solid fa-hat-cowboy text-3xl mb-2 opacity-90'></i>
+                                        <div class='text-[10px] tracking-[3px] font-semibold'>ROCCO</div>
+                                        <div class='text-[10px] tracking-[3px] font-semibold -mt-0.5'>COWBOY</div>
                                     </div>
                                 </div>\`;">
                     </div>
@@ -819,16 +1362,6 @@
             return card;
         }
 
-        function getSuitColor(suit) {
-            switch(suit) {
-                case 'wands': return '#C17B6B';
-                case 'cups': return '#6B8E9F';
-                case 'swords': return '#8B7E74';
-                case 'pentacles': return '#C5A46E';
-                default: return '#C5A46E';
-            }
-        }
-
         // Show card in modal
         function showCardModal(cardData) {
             const modal = document.getElementById('card-modal');
@@ -845,10 +1378,8 @@
             
             // Show appropriate meaning
             let meaningText = cardData.meaning;
-            if (isReversed && cardData.reversed_meaning) {
-                meaningText = cardData.reversed_meaning;
-            } else if (isReversed) {
-                meaningText = cardData.meaning + "\n\n(Reversed: The energy is blocked, internalized, or delayed.)";
+            if (isReversed) {
+                meaningText = cardData.meaning + "\n\n(Reversed: The energy is blocked, internalized, delayed, or expressing its shadow side.)";
             }
             document.getElementById('modal-card-meaning').innerText = meaningText;
             
@@ -857,19 +1388,20 @@
             keywordsContainer.innerHTML = '';
             cardData.keywords.forEach(keyword => {
                 const tag = document.createElement('span');
-                tag.className = 'px-4 py-1 bg-[#f8f1e3] text-[#3f2a1e] text-xs rounded-3xl border border-[#C5A46E]/30';
+                tag.className = 'px-3.5 py-1 bg-[#1C1612] text-[#EDE4D7] text-xs rounded-3xl border border-[#C9A86C]/30';
                 tag.innerText = keyword;
                 keywordsContainer.appendChild(tag);
             });
             
-            // Try to load real generated card image (support .png and .jpg)
+            // Try to load real generated card image
             const baseName = `cards/${String(cardData.id).padStart(2, '0')}-${cardData.name.toLowerCase().replace(/\s+/g, '-')}`;
             const imgContainer = document.getElementById('modal-card-image');
             
             imgContainer.src = `${baseName}.png`;
             imgContainer.alt = cardData.name;
+            imgContainer.style.display = 'block';
             
-            // Fallback logic: Try .png first, then .jpg
+            // Fallback logic
             imgContainer.onerror = function() {
                 if (this.src.endsWith('.png')) {
                     this.src = `${baseName}.jpg`;
@@ -877,11 +1409,11 @@
                     this.style.display = 'none';
                     const parent = this.parentElement;
                     parent.innerHTML = `
-                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#f8f1e3] to-[#e8d9c2] rounded-xl">
+                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#2A221C] to-[#1C1612] rounded-xl">
                             <div class="text-center p-6">
-                                <div class="text-[#C5A46E] text-sm tracking-widest mb-2">${cardData.type.toUpperCase()}</div>
-                                <div class="heading-serif text-3xl text-[#3f2a1e] mb-1">${cardData.name}</div>
-                                <div class="text-[#C5A46E]">${cardData.number}</div>
+                                <div class="text-[#C9A86C] text-sm tracking-widest mb-2">${cardData.type.toUpperCase()}</div>
+                                <div class="heading-serif text-3xl text-[#EDE4D7] mb-1">${cardData.name}</div>
+                                <div class="text-[#C9A86C]">${cardData.number}</div>
                             </div>
                         </div>
                     `;
@@ -920,8 +1452,12 @@
         // Filter gallery by suit
         function filterBySuit(suit) {
             // Update active button
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active', 'bg-[#C5A46E]', 'text-white'));
-            event.currentTarget.classList.add('active', 'bg-[#C5A46E]', 'text-white');
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-[#E8C87A]', 'text-[#1C1612]', 'font-medium');
+                btn.classList.add('text-[#A89880]');
+            });
+            event.currentTarget.classList.add('active', 'bg-[#E8C87A]', 'text-[#1C1612]', 'font-medium');
+            event.currentTarget.classList.remove('text-[#A89880]');
             
             let filtered = cards;
             
@@ -956,12 +1492,6 @@
         // Initialize everything
         window.onload = function() {
             initApp();
-            
-            // Demo: Draw 3 cards on first load (optional)
-            setTimeout(() => {
-                // Uncomment the line below if you want auto-draw on load
-                // drawCards(3);
-            }, 800);
         };
     </script>
 </body>
