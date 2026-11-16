@@ -89,7 +89,10 @@
             transform-style: preserve-3d;
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
             border-radius: 12px;
-            overflow: hidden;
+            /* No overflow:hidden here: it forces transform-style flat, which
+               breaks backface-visibility and shows the front face mirrored
+               instead of the card back when the card is face-down.
+               Each face clips its own content with its own radius + overflow. */
         }
         
         .tarot-card.flipped .tarot-card-inner {
@@ -1520,7 +1523,7 @@
                 <div class="tarot-card-inner shadow-xl">
                     <!-- Front -->
                     <div class="tarot-card-front p-2.5 flex flex-col">
-                        <div class="flex-1 relative overflow-hidden rounded-lg border border-[#C9A86C]/25 bg-[#1C1612]">
+                        <div class="flex-1 min-h-0 relative overflow-hidden rounded-lg border border-[#C9A86C]/25 bg-[#1C1612]">
                             <img src="${imagePath}" 
                                  class="w-full h-full object-cover"
                                  onerror="if (this.src.endsWith('.png')) {
