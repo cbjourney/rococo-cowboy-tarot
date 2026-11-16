@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rococo Cowboy Tarot</title>
+    <meta name="description" content="Draw a free reading from the Rococo Cowboy Tarot — an original 78-card deck where rococo ornament meets the Wild West. Explore the full deck and join the waitlist for the printed deck.">
+    <meta property="og:title" content="Rococo Cowboy Tarot">
+    <meta property="og:description" content="Shuffle the deck and receive guidance from the desert night. An original 78-card tarot, hand-illustrated by CB.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rocococowboy.com/">
+    <meta property="og:image" content="https://rocococowboy.com/cards/00-the-fool.png">
+    <meta name="twitter:card" content="summary_large_image">
     
     <!-- 
     ================================================
@@ -89,11 +96,9 @@
             transform: rotateY(180deg);
         }
 
-        .tarot-card.reversed {
-            transform: rotate(180deg);
-        }
-        
-        .tarot-card.reversed .tarot-card-inner {
+        /* Reversed cards show their face upside-down. The rotation lives on the
+           front face only, so it never fights the flip animation or the hover lift. */
+        .tarot-card.reversed .tarot-card-front {
             transform: rotate(180deg);
         }
         
@@ -516,6 +521,10 @@
                     <i class="fa-solid fa-book-open"></i>
                     <span>Gallery</span>
                 </button>
+                <button onclick="switchTab('about')" id="tab-about" class="section-tab">
+                    <i class="fa-solid fa-feather"></i>
+                    <span>About</span>
+                </button>
             </div>
         </div>
     </div>
@@ -563,9 +572,39 @@
         <div id="drawn-cards" class="spread-container">
             <!-- Cards will be dynamically added here -->
         </div>
+
+        <!-- Share this reading -->
+        <div id="share-bar" class="hidden text-center mt-8">
+            <div class="flex flex-wrap justify-center gap-3">
+                <button onclick="shareReading()" class="btn-secondary gold-glow">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Share this reading</span>
+                </button>
+                <button onclick="copyReadingLink()" class="btn-secondary gold-glow">
+                    <i class="fa-solid fa-link"></i>
+                    <span>Copy link</span>
+                </button>
+                <button onclick="copyReadingText()" class="btn-secondary gold-glow">
+                    <i class="fa-solid fa-copy"></i>
+                    <span>Copy reading as text</span>
+                </button>
+            </div>
+            <div id="share-note" class="text-xs text-[#C9A86C] mt-3 h-4"></div>
+        </div>
         
         <div class="text-center mt-10 text-xs text-[#A89880]">
-            Click any card to flip it, then click again for its full meaning
+            Click a card to reveal it, then click again for its full meaning
+        </div>
+
+        <!-- Printed deck waitlist -->
+        <div class="max-w-2xl mx-auto mt-16 text-center border border-[#C9A86C]/30 rounded-3xl p-8 bg-[#2A221C]/60">
+            <div class="text-[#C9A86C] text-xs tracking-[2px] font-semibold mb-2">THE PRINTED DECK</div>
+            <h3 class="heading-serif text-3xl text-[#EDE4D7] mb-3">Hold the desert in your hands</h3>
+            <p class="text-[#A89880] text-sm leading-relaxed mb-6">The Rococo Cowboy Tarot is becoming a real printed deck — all 78 cards, made to shuffle, draw, and keep. It is in the works now. Join the list and you will be first to know when it is ready to order. One email when the deck drops, nothing else.</p>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfj4JO0bBIa2FFH0p4nHkk5osf5O6em8Re6g4yr2OzUEmw5tw/viewform" target="_blank" rel="noopener" class="btn-primary gold-glow" style="text-decoration:none;">
+                <i class="fa-solid fa-envelope"></i>
+                <span>Notify me when the deck drops</span>
+            </a>
         </div>
     </div>
 
@@ -599,6 +638,25 @@
         <!-- Card Grid -->
         <div id="gallery-grid" class="card-grid">
             <!-- Populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- ABOUT SECTION -->
+    <div id="section-about" class="max-w-3xl mx-auto px-6 pt-8 sm:pt-10 pb-16 hidden">
+        <div class="text-center mb-8">
+            <h2 class="heading-serif text-4xl sm:text-5xl tracking-tight mb-3 text-[#EDE4D7]">About the Deck</h2>
+            <p class="text-[#C9A86C] text-sm tracking-[2px] font-medium">ROCOCO ORNAMENT · WILD WEST · 78 CARDS</p>
+        </div>
+        <div class="space-y-5 text-[#EDE4D7] leading-relaxed text-[15px]">
+            <p>The Rococo Cowboy Tarot is an original 78-card deck where the gilded curves of the rococo meet the dust, leather, and open sky of the Wild West. Every card is hand-illustrated — the gold leaf and the grit belong to the same picture.</p>
+            <p>It was created by Christopher Bryan Journey, who signs the deck “CB”. The deck keeps the classic structure — 22 Major Arcana and four suits of fourteen — so it reads like any tarot you have held before, but every image is its own piece of desert-night artwork.</p>
+            <p>Right now the deck lives here, free to draw and explore. A printed deck is in the works — join the waitlist on the Read page and you will hear first when it is ready to hold.</p>
+        </div>
+        <div class="text-center mt-10">
+            <button onclick="switchTab('read')" class="btn-primary gold-glow">
+                <i class="fa-solid fa-cards"></i>
+                <span>Draw your cards</span>
+            </button>
         </div>
     </div>
 
@@ -1034,14 +1092,22 @@
         let currentFilter = 'all';
         let drawnCards = [];
         let selectedSpreadKey = 'single';
+        let currentReading = null;
 
         // Initialize the app
         function initApp() {
             populateGallery();
+
+            // A shared reading link wins; otherwise the first screen is never
+            // empty — show today's card.
+            if (!restoreSharedReading()) {
+                showCardOfTheDay();
+            }
             
             // Show read section by default
             document.getElementById('section-read').classList.remove('hidden');
             document.getElementById('section-gallery').classList.add('hidden');
+            document.getElementById('section-about').classList.add('hidden');
             
             // Keyboard support
             document.addEventListener('keydown', function(e) {
@@ -1056,24 +1122,15 @@
             console.log('%c[Rococo Cowboy Tarot] Dark theme + spreads initialized', 'color:#C9A86C');
         }
 
-        // Switch between Read and Gallery tabs
+        // Switch between Read, Gallery, and About tabs
         function switchTab(tab) {
-            const readSection = document.getElementById('section-read');
-            const gallerySection = document.getElementById('section-gallery');
-            const tabRead = document.getElementById('tab-read');
-            const tabGallery = document.getElementById('tab-gallery');
-
-            if (tab === 'read') {
-                readSection.classList.remove('hidden');
-                gallerySection.classList.add('hidden');
-                tabRead.classList.add('active');
-                tabGallery.classList.remove('active');
-            } else {
-                readSection.classList.add('hidden');
-                gallerySection.classList.remove('hidden');
-                tabRead.classList.remove('active');
-                tabGallery.classList.add('active');
-            }
+            const sections = { read: 'section-read', gallery: 'section-gallery', about: 'section-about' };
+            const tabs = { read: 'tab-read', gallery: 'tab-gallery', about: 'tab-about' };
+            Object.keys(sections).forEach(key => {
+                document.getElementById(sections[key]).classList.toggle('hidden', key !== tab);
+                document.getElementById(tabs[key]).classList.toggle('active', key === tab);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // Select a spread type
@@ -1092,6 +1149,9 @@
             const container = document.getElementById('drawn-cards');
             container.innerHTML = '';
             drawnCards = [];
+            currentReading = null;
+            history.replaceState(null, '', location.pathname + location.search);
+            hideShareBar();
             
             // Visual shuffle effect
             const shuffleText = document.createElement('div');
@@ -1135,12 +1195,15 @@
             }
             
             drawnCards = selected;
+            currentReading = { spread: selectedSpreadKey, cards: selected.map(c => ({ id: c.id, reversed: !!c.reversed })) };
+            updateReadingHash();
+            showShareBar();
             
             // Build the layout
             renderSpread(container, selected, spread);
         }
 
-        function renderSpread(container, selected, spread) {
+        function renderSpread(container, selected, spread, revealed = false) {
             // Title
             const title = document.createElement('div');
             title.className = 'spread-title';
@@ -1255,6 +1318,11 @@
                 container.appendChild(note);
             }
             
+            // Shared readings arrive already revealed; fresh draws start face-down.
+            if (revealed) {
+                container.querySelectorAll('.tarot-card.flipped').forEach(el => el.classList.remove('flipped'));
+            }
+
             // Staggered entrance animation
             const allCards = container.querySelectorAll('.tarot-card');
             allCards.forEach((cardEl, idx) => {
@@ -1264,6 +1332,8 @@
                     cardEl.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
                     cardEl.style.opacity = '1';
                     cardEl.style.transform = 'translateY(0)';
+                    // Hand transform back to the stylesheet so the hover lift works.
+                    setTimeout(() => { cardEl.style.transform = ''; cardEl.style.transition = ''; }, 550);
                 }, idx * 120);
             });
         }
@@ -1283,11 +1353,161 @@
             return wrapper;
         }
 
+        // ===== CARD OF THE DAY =====
+        // The same card for everyone, all day, so the first screen is never
+        // an empty box. Deterministic from the date — no server needed.
+        function showCardOfTheDay() {
+            const container = document.getElementById('drawn-cards');
+            container.innerHTML = '';
+            const today = new Date();
+            const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+            const cardData = { ...cards[seed % cards.length] };
+            cardData.reversed = (Math.floor(seed / cards.length) % 2 === 0);
+            const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            cardData.positionLabel = dateStr;
+
+            const wrap = document.createElement('div');
+            wrap.className = 'w-full max-w-xl mx-auto text-center';
+            wrap.innerHTML = `
+                <div class="spread-title">Card of the Day</div>
+                <p class="text-[#A89880] text-sm mb-6">The same card for everyone, until midnight</p>`;
+            const cardWrap = createLabeledCard(cardData, 0);
+            // This is a reveal, not a draw — show it face-up.
+            cardWrap.querySelector('.tarot-card').classList.remove('flipped');
+            wrap.appendChild(cardWrap);
+
+            const meaning = document.createElement('p');
+            meaning.className = 'text-[#EDE4D7] leading-relaxed text-[15px] mt-6 max-w-md mx-auto';
+            meaning.textContent = cardData.meaning;
+            wrap.appendChild(meaning);
+            if (cardData.reversed) {
+                const rev = document.createElement('p');
+                rev.className = 'text-[#C9A86C] text-sm mt-3 max-w-md mx-auto';
+                rev.textContent = 'Reversed: The energy is blocked, internalized, delayed, or expressing its shadow side.';
+                wrap.appendChild(rev);
+            }
+            const kw = document.createElement('div');
+            kw.className = 'flex flex-wrap justify-center gap-2 mt-4';
+            cardData.keywords.forEach(k => {
+                const tag = document.createElement('span');
+                tag.className = 'px-3.5 py-1 bg-[#1C1612] text-[#EDE4D7] text-xs rounded-3xl border border-[#C9A86C]/30';
+                tag.innerText = k;
+                kw.appendChild(tag);
+            });
+            wrap.appendChild(kw);
+            const note = document.createElement('p');
+            note.className = 'text-[#A89880] text-sm mt-6';
+            note.textContent = 'Shuffle the deck above to draw your own spread.';
+            wrap.appendChild(note);
+
+            container.appendChild(wrap);
+        }
+
+        // ===== SHARING =====
+        // A reading lives in the URL hash, e.g. #r=three:23r,7,41 — opening
+        // that link restores the exact spread, so readings can be shared.
+        function readingHash() {
+            if (!currentReading) return '';
+            const parts = currentReading.cards.map(c => c.id + (c.reversed ? 'r' : '')).join(',');
+            return `#r=${currentReading.spread}:${parts}`;
+        }
+
+        function updateReadingHash() {
+            history.replaceState(null, '', location.pathname + location.search + readingHash());
+        }
+
+        function restoreSharedReading() {
+            const match = location.hash.match(/^#r=([a-z]+):([\d,r]+)$/);
+            if (!match) return false;
+            const spread = spreads[match[1]];
+            if (!spread) return false;
+            const ids = match[2].split(',');
+            if (ids.length !== spread.count) return false;
+            const selected = ids.map((token, i) => {
+                const reversed = token.endsWith('r');
+                const id = parseInt(token, 10);
+                const base = cards.find(c => c.id === id);
+                if (!base) return null;
+                return { ...base, reversed, positionLabel: spread.positions[i] || `Position ${i + 1}` };
+            });
+            if (selected.some(c => !c)) return false;
+            selectedSpreadKey = match[1];
+            document.querySelectorAll('.spread-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.spread === match[1]);
+            });
+            drawnCards = selected;
+            currentReading = { spread: match[1], cards: selected.map(c => ({ id: c.id, reversed: !!c.reversed })) };
+            renderSpread(document.getElementById('drawn-cards'), selected, spread, true);
+            showShareBar();
+            return true;
+        }
+
+        function showShareBar() {
+            document.getElementById('share-bar').classList.remove('hidden');
+        }
+
+        function hideShareBar() {
+            document.getElementById('share-bar').classList.add('hidden');
+            document.getElementById('share-note').textContent = '';
+        }
+
+        function shareNote(msg) {
+            const el = document.getElementById('share-note');
+            el.textContent = msg;
+            setTimeout(() => { el.textContent = ''; }, 3500);
+        }
+
+        function readingText() {
+            if (!currentReading) return '';
+            const spread = spreads[currentReading.spread];
+            const lines = [`Rococo Cowboy Tarot — ${spread.name}`];
+            currentReading.cards.forEach((c, i) => {
+                const card = cards.find(x => x.id === c.id);
+                lines.push(`${spread.positions[i] || 'Card'}: ${card.name}${c.reversed ? ' (Reversed)' : ''} — ${card.keywords.join(', ')}`);
+            });
+            lines.push('Draw your own: https://rocococowboy.com/');
+            return lines.join('\n');
+        }
+
+        function readingLink() {
+            return location.href.split('#')[0] + readingHash();
+        }
+
+        async function copyReadingLink() {
+            try {
+                await navigator.clipboard.writeText(readingLink());
+                shareNote('Link copied — it opens this exact reading.');
+            } catch (e) {
+                shareNote('Copy didn\'t work — the link is in your address bar.');
+            }
+        }
+
+        async function copyReadingText() {
+            try {
+                await navigator.clipboard.writeText(readingText());
+                shareNote('Reading copied as text.');
+            } catch (e) {
+                shareNote('Copy didn\'t work in this browser.');
+            }
+        }
+
+        async function shareReading() {
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: 'Rococo Cowboy Tarot', text: readingText(), url: readingLink() });
+                } catch (e) { /* the user cancelled the share sheet */ }
+            } else {
+                copyReadingLink();
+            }
+        }
+
         // Create a single card element
         function createCardElement(cardData, isDrawn = false, index = 0) {
             const card = document.createElement('div');
-            let classes = `tarot-card mx-auto ${isDrawn ? '' : ''}`;
+            let classes = `tarot-card mx-auto`;
             if (cardData.reversed) classes += ' reversed';
+            // Drawn cards start face-down; the first click reveals them.
+            if (isDrawn) classes += ' flipped';
             card.className = classes;
             card.dataset.cardId = cardData.id;
             card.dataset.reversed = cardData.reversed ? 'true' : 'false';
@@ -1346,11 +1566,11 @@
                 </div>
             `;
             
-            // Click to flip or show modal
+            // First click reveals the card; second click opens its full meaning.
             card.addEventListener('click', () => {
                 if (isDrawn) {
-                    if (!card.classList.contains('flipped')) {
-                        card.classList.add('flipped');
+                    if (card.classList.contains('flipped')) {
+                        card.classList.remove('flipped');
                     } else {
                         showCardModal(cardData);
                     }
